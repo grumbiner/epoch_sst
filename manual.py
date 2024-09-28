@@ -49,6 +49,7 @@ sumx1 = np.zeros((ny,nx))
 sumx2 = np.zeros((ny,nx))
 sumx3 = np.zeros((ny,nx))
 sumx4 = np.zeros((ny,nx))
+#debug: print('dtype for sumx1 ',sumx1.dtype, flush=True)
 
 # for trend computation
 sumt = 0
@@ -75,6 +76,9 @@ tag = start
 #debug: end = datetime.datetime(1981,9,30)
 days = 0
 while (tag <= end ):
+    if (days % 30 == 0):
+      print(tag)
+
 # Get the day's data:
     fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
     tmpnc = netCDF4.Dataset(fbase + fname)
@@ -89,8 +93,7 @@ while (tag <= end ):
 
 # Accumulate moments:
     tmp = copy.deepcopy(sst)
-    #debug: 
-    print("moment1", tag, tmp.max(), tmp.min() )
+    #debug: print("moment1", tag, tmp.max(), tmp.min() )
     sumx1 += tmp
     tmp *= sst
     #debug: print("moment2",tag, tmp.max(), tmp.min() )
@@ -168,4 +171,36 @@ print("sumx4", sumx4.max(), sumx4.min() )
 print("sumxt", sumxt.max(), sumxt.min() )
 print("sumt2", sumt2.max(), sumt2.min() )
 print("sumt",sumt, sumt/days)
+
+#-------------------------------------------------
+import ncoutput
+
+#-------------------------------------------------
+name = "first_pass.nc"
+sumx1 /= float(days)
+sumx2 /= float(days)
+sumx3 /= float(days)
+sumx4 /= float(days)
+sumxt /= float(days)
+sumt2 /= float(days)
+
+foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
+foroutput.ncoutput(name)
+foroutput.addvar('sumx1', dtype = sumx1.dtype)
+foroutput.addvar('sumx2', dtype = sumx2.dtype)
+foroutput.addvar('sumx3', dtype = sumx3.dtype)
+foroutput.addvar('sumx4', dtype = sumx4.dtype)
+foroutput.addvar('sumxt', dtype = sumxt.dtype)
+foroutput.addvar('sumt2', dtype = sumt2.dtype)
+
+foroutput.encodevar(sumx1, 'sumx1')
+foroutput.encodevar(sumx2, 'sumx2')
+foroutput.encodevar(sumx3, 'sumx3')
+foroutput.encodevar(sumx4, 'sumx4')
+foroutput.encodevar(sumxt, 'sumxt')
+foroutput.encodevar(sumt2, 'sumt2')
+
+foroutput.close()
+
+print("days = ",days, "sumt = ",sumt, sumt/days)
 
