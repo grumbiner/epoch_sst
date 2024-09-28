@@ -22,6 +22,7 @@ start = datetime.datetime(1981,9,1)
 #ops: end = datetime.datetime(2010,8,31)
 #debug: 
 end = datetime.datetime(1981,9,30)
+end = datetime.datetime(1982,8,31)
 dt = datetime.timedelta(1)
 tag = start
 
