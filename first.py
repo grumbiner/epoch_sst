@@ -101,6 +101,7 @@ def applymask(mask, grid, indices):
 #------------------------------------------------
 #RG: write out mean, max, min to save file
 mask =  ma.masked_array(sumx1 < -900.*days)
+indices = mask.nonzero()
 
 applymask(mask, sumx1, indices)
 applymask(mask, sumx2, indices)
