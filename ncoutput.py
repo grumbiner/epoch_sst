@@ -47,27 +47,22 @@ class ncoutput:
     #debug: print("leaving ncoutput", flush=True)
 
   def addvar(self, vname, dtype):
-    #debug print('dtype = ',dtype, flush=True)
-    #if (dtype == 'uint8'):
-    #  fill = 255
-    #else:
-    #  print("failed type test")
-    #  fill = 255
     fill = -999.0
 
-    #try:
     tmp = self.ncfile.createVariable(vname, dtype, ( 'lat','lon'), fill_value=fill)
-    #except:
-    #  return
     self.var.append(tmp)
     self.var[self.count].long_name = vname
     self.count += 1
     #debug: print("leaving addvar", flush=True)
 
   def encodevar(self, allvalues, vname):
-    #debug: print("entering encodevar")
+    #debug: print("entering encodevar", flush=True)
     if (self.nx*self.ny != 0) :
       self.ncfile.variables[vname][:,:] = allvalues
+
+  def encodescalar(self, value, vname):
+    #debug: print("entering encodescalar", flush=True)
+    self.ncfile.setncattr(vname, value)
 
   def close(self):
     # close netcdf file associated w. patch
