@@ -8,40 +8,6 @@ import numpy.ma as ma
 import netCDF4
 
 #-------------------------------------------------
-from harmonic_grid import * 
-
-# Define harmonic frequencies
-loy = 365.2422 #days, tropical year
-lom = 29.53    #days, lunar synodic month
-#lom = 27.322    = 1/(1/lom + 1/loy)
-
-nfreq = 6
-omega = np.zeros((nfreq))
-omega[0] = 2.*pi/loy
-omega[1] = 2.*pi/loy*2
-omega[2] = 2.*pi/loy*3
-omega[3] = 2.*pi/loy*4
-omega[4] = 2.*pi/loy*5
-omega[5] = 2.*pi/loy*6
-
-#omega[3] = 2.*pi/(loy*(30/2.))
-#omega[4] = 2.*pi/(loy*(30/3.))
-#omega[5] = 2.*pi/(loy*(30/4.))
-#omega[6] = 2.*pi/(loy*(30/5.))
-#omega[7] = 2.*pi/(loy*(30/6.))
-#omega[8] = 2.*pi/(loy*(30/7.))
-#omega[9] = 2.*pi/(loy*(30/8.))
-#omega[10] = 2.*pi/(loy*(30/9.))
-#omega[11] = 2.*pi/(loy*(30/10.))
-
-#omega[3] = 2.*pi/loy*4
-#omega[4] = 2.*pi/loy*5
-#omega[5] = 2.*pi/loy*6
-#omega[3] = 2.*pi/lom   + omega[0]
-#omega[4] = 2.*pi/lom*2 + omega[1]
-#omega[5] = 2.*pi/lom*3 + omega[2]
-
-#-------------------------------------------------
 # Defining the quarter degree grid
 nx = 1440
 ny = 720
@@ -84,14 +50,9 @@ sumx3 = np.zeros((ny,nx))
 sumx4 = np.zeros((ny,nx))
 #debug: print('dtype for sumx1 ',sumx1.dtype, flush=True)
 
-# for trend
 sumt  = np.zeros((ny,nx))
 sumxt = np.zeros((ny,nx))
 sumt2 = np.zeros((ny,nx))
-
-# for harmonic summing
-hsum1    = np.zeros((ny, nx, nfreq))
-hsum2    = np.zeros((ny, nx, nfreq))
 
 # extrema
 tmax = np.zeros((ny,nx))
@@ -133,12 +94,6 @@ while (tag <= end ):
     sumt2 += float(days*days)
     sumxt += tmp*float(days)
 
-# Accumulate harmonics:
-    tmp = copy.deepcopy(sst)
-    for j in range(0, nfreq):
-      hsum1[:,:,j] += tmp * cos(omega[j]*days) 
-      hsum2[:,:,j] += tmp * sin(omega[j]*days) 
-
 # Find extrema:
     tmax = np.fmax(tmax, sst)
     tmin = np.fmin(tmin, sst)
@@ -154,35 +109,6 @@ def applymask(mask, grid, indices):
     grid[j,i] = 0.   
 
 #------------------------------------------------
-lda = 2*nfreq
-coeff = np.zeros((lda, lda))
-harmsums = np.zeros((ny, nx, nfreq*2))
-alpha    = np.zeros((ny, nx, nfreq))
-beta     = np.zeros((ny, nx, nfreq))
-
-harmonic_coeffs(coeff, omega, days, nfreq)
-
-def sinsum(n, freq):
-  sum = 0.
-  for i in range(0,n):
-    sum += sin(freq*i)
-  return sum
-    
-def cossum(n, freq):
-  sum = 0.
-  for i in range(0,n):
-    sum += cos(freq*i)
-  return sum
-    
-
-mean = sumx1/days
-for j in range(0, nfreq):
-  harmsums[:,:,2*j  ] = hsum1[:,:,j ] - mean*cossum(days, omega(j))
-  harmsums[:,:,2*j+1] = hsum2[:,:,j ] - mean*sinsum(days, omega(j))
-
-harmonic_solve(coeff, harmsums, alpha, beta, nfreq)
-
-#------------------------------------------------
 #RG: write out mean, max, min to save file
 mask =  ma.masked_array(sumx1 < -900.*days)
 indices = mask.nonzero()
@@ -191,33 +117,20 @@ applymask(mask, sumx1, indices)
 applymask(mask, sumx2, indices)
 applymask(mask, sumx3, indices)
 applymask(mask, sumx4, indices)
+applymask(mask, sumt , indices)
 applymask(mask, sumxt, indices)
-applymask(mask, sumt, indices)
 applymask(mask, sumt2, indices)
-applymask(mask, alpha, indices)
-applymask(mask, beta , indices)
 
 print("sumx1", sumx1.max(), sumx1.min() )
 print("sumx2", sumx2.max(), sumx2.min() )
 print("sumx3", sumx3.max(), sumx3.min() )
 print("sumx4", sumx4.max(), sumx4.min() )
+print("sumt ", sumt.max(), sumt.min() )
+print("sumxt", sumxt.max(), sumxt.min() )
+print("sumt2", sumt2.max(), sumt2.min() )
 print("tmax", tmax.max() , tmax.min() )
 print("tmin", tmin.max() , tmin.min() )
-print("alpha", alpha.max(), alpha.min(), alpha.mean() )
-print("beta ", beta.max(), beta.min(), beta.mean() )
 
-ampls = np.zeros((ny, nx, nfreq))
-phase = np.zeros((ny, nx, nfreq))
-
-for j in range(0, nfreq):
-  #debug: print(j, "alpha", alpha[:,:,j].max(), alpha[:,:,j].min(), alpha[:,:,j].mean() )
-  #debug: print(j, "beta ", beta[:,:,j].max(), beta[:,:,j].min(), beta[:,:,j].mean() )
-  ampls[:,:,j] = np.sqrt(alpha[:,:,j]**2 + beta[:,:,j]**2)
-  phase[:,:,j] = np.arctan2(beta[:,:,j], alpha[:,:,j])
-  print(j, "ampls", ampls[:,:,j].max(), ampls[:,:,j].min(), ampls[:,:,j].mean() )
-  #debug: print(j, "phase", phase[:,:,j].max() )
-
-  
 #-------------------------------------------------
 import ncoutput
 
@@ -234,24 +147,6 @@ foroutput.addvar('sumxt', dtype = sumxt.dtype)
 foroutput.addvar('sumt2', dtype = sumt2.dtype)
 foroutput.addvar('tmax', dtype = tmax.dtype)
 foroutput.addvar('tmin', dtype = tmin.dtype)
-foroutput.addvar('cpy1_amp', dtype = ampls.dtype)
-foroutput.addvar('cpy1_pha', dtype = phase.dtype)
-foroutput.addvar('cpy2_amp', dtype = ampls.dtype)
-foroutput.addvar('cpy2_pha', dtype = phase.dtype)
-foroutput.addvar('cpy3_amp', dtype = ampls.dtype)
-foroutput.addvar('cpy3_pha', dtype = phase.dtype)
-foroutput.addvar('cpy4_amp', dtype = ampls.dtype)
-foroutput.addvar('cpy4_pha', dtype = phase.dtype)
-foroutput.addvar('cpy5_amp', dtype = ampls.dtype)
-foroutput.addvar('cpy5_pha', dtype = phase.dtype)
-foroutput.addvar('cpy6_amp', dtype = ampls.dtype)
-foroutput.addvar('cpy6_pha', dtype = phase.dtype)
-#foroutput.addvar('cpy7_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy8_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy9_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy10_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy11_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy12_amp', dtype = ampls.dtype)
 
 foroutput.encodevar(sumx1, 'sumx1')
 foroutput.encodevar(sumx2, 'sumx2')
@@ -262,24 +157,6 @@ foroutput.encodevar(sumxt, 'sumxt')
 foroutput.encodevar(sumt2, 'sumt2')
 foroutput.encodevar(tmin, 'tmin')
 foroutput.encodevar(tmax, 'tmax')
-foroutput.encodevar(ampls[:,:,0], 'cpy1_amp')
-foroutput.encodevar(phase[:,:,0], 'cpy1_pha')
-foroutput.encodevar(ampls[:,:,1], 'cpy2_amp')
-foroutput.encodevar(phase[:,:,1], 'cpy2_pha')
-foroutput.encodevar(ampls[:,:,2], 'cpy3_amp')
-foroutput.encodevar(phase[:,:,2], 'cpy3_pha')
-foroutput.encodevar(ampls[:,:,3], 'cpy4_amp')
-foroutput.encodevar(phase[:,:,3], 'cpy4_pha')
-foroutput.encodevar(ampls[:,:,4], 'cpy5_amp')
-foroutput.encodevar(phase[:,:,4], 'cpy5_pha')
-foroutput.encodevar(ampls[:,:,5], 'cpy6_amp')
-foroutput.encodevar(phase[:,:,5], 'cpy6_pha')
-#foroutput.encodevar(ampls[:,:,6], 'cpy7_amp')
-#foroutput.encodevar(ampls[:,:,7], 'cpy8_amp')
-#foroutput.encodevar(ampls[:,:,8], 'cpy9_amp')
-#foroutput.encodevar(ampls[:,:,9], 'cpy10_amp')
-#foroutput.encodevar(ampls[:,:,10], 'cpy11_amp')
-#foroutput.encodevar(ampls[:,:,11], 'cpy12_amp')
 
 tmask = np.zeros((ny,nx))
 for k in range(0, len(indices[0]) ):
@@ -294,5 +171,3 @@ foroutput.encodescalar(days, 'days')
 
 foroutput.close()
 #------------------ End of first pass --------------------------
-
-
