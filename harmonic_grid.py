@@ -9,21 +9,21 @@ separate from processing for gridded data in a series due to matrix operations
 """ 
 
 # Summation functions -- cross terms for non-orthogonality of harmonics
-def sssum(freq1, freq2, n):
+def sssum(freq1, freq2, n, n0 = 0):
   sum = 0. 
-  for i in range(0, n):
+  for i in range(n0, n0+n):
     sum += sin(freq1*i)*sin(freq2*i)
   return sum
       
-def scsum(freq1, freq2, n):
+def scsum(freq1, freq2, n, n0 = 0):
   sum = 0. 
-  for i in range(0, n):
+  for i in range(n0, n0+n):
     sum += sin(freq1*i)*cos(freq2*i)
   return sum
   
-def ccsum(freq1, freq2, n):
+def ccsum(freq1, freq2, n, n0 = 0):
   sum = 0.
-  for i in range(0, n):
+  for i in range(n0, n0+n):
     sum += cos(freq1*i)*cos(freq2*i)
   return sum
 
@@ -38,19 +38,32 @@ def sumcos(freq, t, n):
   for i in range(0,n):
     sum += cos(freq*t[i])
   return sum
+#***********************************************************----------!!
+
+def sinsum(n, freq, n0 = 0):
+  sum = 0.
+  for i in range(n0,n0+n):
+    sum += sin(freq*i)
+  return sum
+
+def cossum(n, freq, n0 = 0):
+  sum = 0.
+  for i in range(n0,n0+n):
+    sum += cos(freq*i)
+  return sum
 
 #***********************************************************----------!!
 # x is the data vector, a, b are cos, sin amplitudes, respectively
 # this changes in summations for grids
 
 # time ranges 0 to t
-def harmonic_coeffs(coeff, omega, t, m):
+def harmonic_coeffs(coeff, omega, t, m, n0 = 0):
   for i in range(0, m):
     for j in range(0, m):
-      coeff[2*i  , 2*j  ]  = ccsum(omega[i], omega[j], t)
-      coeff[2*i+1, 2*j  ]  = scsum(omega[j], omega[i], t)
-      coeff[2*i  , 2*j+1]  = scsum(omega[i], omega[j], t)
-      coeff[2*i+1, 2*j+1]  = sssum(omega[i], omega[j], t)
+      coeff[2*i  , 2*j  ]  = ccsum(omega[i], omega[j], t, n0)
+      coeff[2*i+1, 2*j  ]  = scsum(omega[j], omega[i], t, n0)
+      coeff[2*i  , 2*j+1]  = scsum(omega[i], omega[j], t, n0)
+      coeff[2*i+1, 2*j+1]  = sssum(omega[i], omega[j], t, n0)
 
 def harmonic_solve(coeff, y, a, b, m):
 # least squares solution for full generality:
@@ -60,5 +73,4 @@ def harmonic_solve(coeff, y, a, b, m):
       for f in range(0,m):
         a[i,j,f] = z[2*f]
         b[i,j,f] = z[2*f+1]
-
 

@@ -50,12 +50,12 @@ harm3 = dset.variables['cpy3_amp'][:,:]
 harm4 = dset.variables['cpy4_amp'][:,:]
 harm5 = dset.variables['cpy5_amp'][:,:]
 harm6 = dset.variables['cpy6_amp'][:,:]
-harm7 = dset.variables['cpy7_amp'][:,:]
-harm8 = dset.variables['cpy8_amp'][:,:]
-harm9 = dset.variables['cpy9_amp'][:,:]
-harm10 = dset.variables['cpy10_amp'][:,:]
-harm11 = dset.variables['cpy11_amp'][:,:]
-harm12 = dset.variables['cpy12_amp'][:,:]
+#harm7 = dset.variables['cpy7_amp'][:,:]
+#harm8 = dset.variables['cpy8_amp'][:,:]
+#harm9 = dset.variables['cpy9_amp'][:,:]
+#harm10 = dset.variables['cpy10_amp'][:,:]
+#harm11 = dset.variables['cpy11_amp'][:,:]
+#harm12 = dset.variables['cpy12_amp'][:,:]
 
 # scalars saved in global attributes
 days = getattr(dset, 'days')
@@ -322,9 +322,9 @@ show(bins, harm3, "h3", "h3")
 show(bins, harm4, "h4", "h4")
 show(bins, harm5, "h5", "h5")
 show(bins, harm6, "h6", "h6")
-show(bins, harm7, "h7", "h7")
-show(bins, harm8, "h8", "h8")
-show(bins, harm9, "h9", "h9")
-show(bins, harm10, "h10", "h10")
-show(bins, harm11, "h11", "h11")
-show(bins, harm12, "h12", "h12")
+#show(bins, harm7, "h7", "h7")
+#show(bins, harm8, "h8", "h8")
+#show(bins, harm9, "h9", "h9")
+#show(bins, harm10, "h10", "h10")
+#show(bins, harm11, "h11", "h11")
+#show(bins, harm12, "h12", "h12")

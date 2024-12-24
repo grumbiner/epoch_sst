@@ -50,10 +50,14 @@ ny = 720
 fbase = "/Volumes/Data/qdoi/v2.1.nc/"
 #file name format: "oisst-avhrr-v02r01.YYYYMMDD.nc"
 start = datetime.datetime(1981,9,1)
+#start = datetime.datetime(1982,9,1)
+#start = datetime.datetime(1990,1,1)
 #debug: end = datetime.datetime(1981,9,30)
-#debug: end = datetime.datetime(1982,8,31)
+#debug: end = datetime.datetime(1983,8,31)
+#debug: end = datetime.datetime(1990,12,31)
 #ops: 
 end = datetime.datetime(2010,8,31)
+#end = datetime.datetime(2019,12,31)
 
 dt = datetime.timedelta(1)
 tag = start
@@ -103,16 +107,19 @@ tmin.fill(45.0)
 # Now run through the data files and accumulate terms:
 
 tag = start
-days = 0
+days = (tag - datetime.datetime(1981,9,1) ).days
+days  = 0
+count = 0
+n0   = days
 while (tag <= end ):
-    if (days % 30 == 0):
+    if (count % 30 == 0):
       print(tag, flush=True)
 
 # Get the day's data:
     fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
     tmpnc = netCDF4.Dataset(fbase + fname)
     sst = tmpnc.variables['sst'][0,0,:,:]
-    if ( days == 0 ):
+    if ( count ==  0 ):
         lons = tmpnc.variables['lon'][:]
         lats = tmpnc.variables['lat'][:]
     tmpnc.close()
@@ -143,8 +150,9 @@ while (tag <= end ):
     tmax = np.fmax(tmax, sst)
     tmin = np.fmin(tmin, sst)
     
-    days += 1
-    tag += dt
+    days  += 1   # days since epoch
+    count += 1   # number of days' data
+    tag   += dt
 
 #------------------------------------------------
 def applymask(mask, grid, indices):
@@ -160,25 +168,15 @@ harmsums = np.zeros((ny, nx, nfreq*2))
 alpha    = np.zeros((ny, nx, nfreq))
 beta     = np.zeros((ny, nx, nfreq))
 
-harmonic_coeffs(coeff, omega, days, nfreq)
+#harmonic_coeffs(coeff, omega, days, nfreq)
+harmonic_coeffs(coeff, omega, count, nfreq, n0 = n0) # rg: probably need n0 here, too.
 
-def sinsum(n, freq):
-  sum = 0.
-  for i in range(0,n):
-    sum += sin(freq*i)
-  return sum
-    
-def cossum(n, freq):
-  sum = 0.
-  for i in range(0,n):
-    sum += cos(freq*i)
-  return sum
-    
-
-mean = sumx1/days
+mean = sumx1/count
 for j in range(0, nfreq):
-  harmsums[:,:,2*j  ] = hsum1[:,:,j ] - mean*cossum(days, omega(j))
-  harmsums[:,:,2*j+1] = hsum2[:,:,j ] - mean*sinsum(days, omega(j))
+  harmsums[:,:,2*j  ]  = hsum1[:,:,j ] 
+  harmsums[:,:,2*j+1]  = hsum2[:,:,j ] 
+#  harmsums[:,:,2*j  ] -= sumx1[:,:]*cossum(count, omega[j], n0 = n0)
+#  harmsums[:,:,2*j+1] -= sumx1[:,:]*sinsum(count, omega[j], n0 = n0)
 
 harmonic_solve(coeff, harmsums, alpha, beta, nfreq)
 
@@ -289,7 +287,7 @@ for k in range(0, len(indices[0]) ):
 foroutput.addvar('mask', dtype = tmask.dtype)
 foroutput.encodevar(tmask, 'mask')
 
-print("days = ",days)
+print("number of days = ",count)
 foroutput.encodescalar(days, 'days')
 
 foroutput.close()
