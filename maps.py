@@ -15,6 +15,7 @@ def show(bins, x, title, fbase):
 
   fig = plt.figure(figsize=(12, 9))
   ax  = fig.add_subplot(1, 1, 1, projection = proj)
+  ax.set_extent((-95, -15, 0, 75),crs=proj)
   ax.coastlines(resolution='10m')
   ax.gridlines()
 
@@ -28,6 +29,7 @@ def show(bins, x, title, fbase):
  
   hist, binedges =  np.histogram(x, bins = bins)
   print(hist, hist.sum() )
+  print(binedges,"\n\n")
   #debug: print(binedges)
 
 
@@ -44,6 +46,12 @@ lats = dset.variables['lat'][:]
 fmask = dset.variables['mask'][:,:]
 sumx1 = dset.variables['sumx1'][:,:]
 sumx2 = dset.variables['sumx2'][:,:]
+mean      = dset.variables['mean'][:,:]
+slope     = dset.variables['slope'][:,:]
+intercept = dset.variables['intercept'][:,:]
+correl    = dset.variables['correl'][:,:]
+tstat     = dset.variables['tstat'][:,:]
+
 harm1 = dset.variables['cpy1_amp'][:,:]
 harm2 = dset.variables['cpy2_amp'][:,:]
 harm3 = dset.variables['cpy3_amp'][:,:]
@@ -95,7 +103,6 @@ cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.
 cbarlabel = '%s' % ("first harmonic temperature")
 cb.set_label(cbarlabel, fontsize=12)
 
-#plt.show()
 plt.savefig("cpy1_geo.png")
 plt.close()
 
@@ -128,7 +135,6 @@ cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.
 cbarlabel = '%s' % ("second harmonic temperature")
 cb.set_label(cbarlabel, fontsize=12)
 
-#plt.show()
 plt.savefig("cpy2_geo.png")
 plt.close()
 
@@ -158,7 +164,6 @@ cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.
 cbarlabel = '%s' % ("third harmonic temperature")
 cb.set_label(cbarlabel, fontsize=12)
 
-#plt.show()
 plt.savefig("cpy3_geo.png")
 plt.close()
 
@@ -188,7 +193,6 @@ cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.
 cbarlabel = '%s' % ("fourth harmonic temperature")
 cb.set_label(cbarlabel, fontsize=12)
 
-#plt.show()
 plt.savefig("cpy4_geo.png")
 plt.close()
 
@@ -217,7 +221,6 @@ cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.
 cbarlabel = '%s' % ("fifth harmonic temperature")
 cb.set_label(cbarlabel, fontsize=12)
 
-#plt.show()
 plt.savefig("cpy5_geo.png")
 plt.close()
 
@@ -246,7 +249,6 @@ cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.
 cbarlabel = '%s' % ("sixth harmonic temperature")
 cb.set_label(cbarlabel, fontsize=12)
 
-#plt.show()
 plt.savefig("cpy6_geo.png")
 plt.close()
 
@@ -310,9 +312,39 @@ plt.savefig("harm1_var.png")
 plt.close()
 
 #------------- ---------------------------------------------
+def find_bins(x, nbin):
+  vmin = floor(x.min()) 
+  vmax = ceil(x.max())
+  return np.linspace(vmin, vmax, nbin)
+
+
+print("\n\nmean")
+bins = find_bins(mean, 34)
+show(bins, mean, "mean", "mean")
+
+print("\n\nintercept")
+bins = find_bins(intercept, 36)
+show(bins, intercept, "intercept", "intercept")
+
+print("\n\nslope")
+#slope *= 365.2422*10.
+#bins = [ -200, -10, -5, -2, -1, 0, 1, 2, 5, 10, 200 ]
+print("slope stats",slope.max(), slope.min(), slope.mean() )
+bins = find_bins(slope, 64)
+show(bins, slope, "slope", "slope")
+
+print("\n\ncorrel")
+#bins = find_bins(correl, 32)
+bins = np.linspace(-1., 1., 33 )
+show(bins, correl, "correl", "correl")
+
+bins = find_bins(tstat, 32)
+show(bins, tstat, "tstat", "tstat")
+
+
+
 res_var = (1.-frac_var1)*var
 bins = [0, 0.01, 0.0625, 0.25, 0.5, 1, 4, 9, 25 ]
-
 show(bins, res_var, "residual variance", "res_var")
 
 bins = [0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1., 1.5, 2, 3, 4, 5, 7.5 ]
@@ -322,9 +354,3 @@ show(bins, harm3, "h3", "h3")
 show(bins, harm4, "h4", "h4")
 show(bins, harm5, "h5", "h5")
 show(bins, harm6, "h6", "h6")
-#show(bins, harm7, "h7", "h7")
-#show(bins, harm8, "h8", "h8")
-#show(bins, harm9, "h9", "h9")
-#show(bins, harm10, "h10", "h10")
-#show(bins, harm11, "h11", "h11")
-#show(bins, harm12, "h12", "h12")

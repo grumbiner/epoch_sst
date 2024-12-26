@@ -42,22 +42,29 @@ omega[5] = 2.*pi/loy*6
 #omega[5] = 2.*pi/lom*3 + omega[2]
 
 #-------------------------------------------------
+# location of data files
+fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+#file name format: "oisst-avhrr-v02r01.YYYYMMDD.nc"
+
 # Defining the quarter degree grid
 nx = 1440
 ny = 720
 
-# location of data files
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
-#file name format: "oisst-avhrr-v02r01.YYYYMMDD.nc"
+
 start = datetime.datetime(1981,9,1)
 #start = datetime.datetime(1982,9,1)
 #start = datetime.datetime(1990,1,1)
+#start = datetime.datetime(1994,12,31)
+
 #debug: end = datetime.datetime(1981,9,30)
-#debug: end = datetime.datetime(1983,8,31)
+#debug: 
+end = datetime.datetime(1982,8,31)
 #debug: end = datetime.datetime(1990,12,31)
 #ops: 
-end = datetime.datetime(2010,8,31)
+#end = datetime.datetime(2010,8,31)
 #end = datetime.datetime(2019,12,31)
+#end = datetime.datetime(2023,12,31)
+#end = datetime.datetime(2024,12,8)
 
 dt = datetime.timedelta(1)
 tag = start
@@ -175,10 +182,12 @@ mean = sumx1/count
 for j in range(0, nfreq):
   harmsums[:,:,2*j  ]  = hsum1[:,:,j ] 
   harmsums[:,:,2*j+1]  = hsum2[:,:,j ] 
-#  harmsums[:,:,2*j  ] -= sumx1[:,:]*cossum(count, omega[j], n0 = n0)
-#  harmsums[:,:,2*j+1] -= sumx1[:,:]*sinsum(count, omega[j], n0 = n0)
 
+# solve for harmonics-only
 harmonic_solve(coeff, harmsums, alpha, beta, nfreq)
+
+#trend_harmonic_solve(coeff2, sumx1, sumxt, sumycos, sumysin,
+#                      coeff, harmsums, alpha, beta, nfreq)
 
 #------------------------------------------------
 #RG: write out mean, max, min to save file
@@ -211,10 +220,13 @@ for j in range(0, nfreq):
   #debug: print(j, "alpha", alpha[:,:,j].max(), alpha[:,:,j].min(), alpha[:,:,j].mean() )
   #debug: print(j, "beta ", beta[:,:,j].max(), beta[:,:,j].min(), beta[:,:,j].mean() )
   ampls[:,:,j] = np.sqrt(alpha[:,:,j]**2 + beta[:,:,j]**2)
-  phase[:,:,j] = np.arctan2(beta[:,:,j], alpha[:,:,j])
+  phase[:,:,j] = np.arctan2(beta[:,:,j], alpha[:,:,j])*180./pi
   print(j, "ampls", ampls[:,:,j].max(), ampls[:,:,j].min(), ampls[:,:,j].mean() )
   #debug: print(j, "phase", phase[:,:,j].max() )
-
+  for k in range(0,ny):
+    for l in range(0,nx):
+      if (phase[k,l,j] < -180.): phase[k,l,j] += 360.
+      if (phase[k,l,j] <  180.): phase[k,l,j] -= 360.
   
 #-------------------------------------------------
 import ncoutput
@@ -224,12 +236,17 @@ name = "first_pass.nc"
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
 foroutput.ncoutput(name)
 foroutput.addvar('sumx1', dtype = sumx1.dtype)
+foroutput.addvar('mean', dtype = sumx1.dtype)
 foroutput.addvar('sumx2', dtype = sumx2.dtype)
 foroutput.addvar('sumx3', dtype = sumx3.dtype)
 foroutput.addvar('sumx4', dtype = sumx4.dtype)
 foroutput.addvar('sumt', dtype = sumt.dtype)
 foroutput.addvar('sumxt', dtype = sumxt.dtype)
 foroutput.addvar('sumt2', dtype = sumt2.dtype)
+foroutput.addvar('intercept', dtype = sumx1.dtype)
+foroutput.addvar('slope', dtype = sumx1.dtype)
+foroutput.addvar('correl', dtype = sumx1.dtype)
+foroutput.addvar('tstat', dtype = sumx1.dtype)
 foroutput.addvar('tmax', dtype = tmax.dtype)
 foroutput.addvar('tmin', dtype = tmin.dtype)
 foroutput.addvar('cpy1_amp', dtype = ampls.dtype)
@@ -244,20 +261,55 @@ foroutput.addvar('cpy5_amp', dtype = ampls.dtype)
 foroutput.addvar('cpy5_pha', dtype = phase.dtype)
 foroutput.addvar('cpy6_amp', dtype = ampls.dtype)
 foroutput.addvar('cpy6_pha', dtype = phase.dtype)
-#foroutput.addvar('cpy7_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy8_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy9_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy10_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy11_amp', dtype = ampls.dtype)
-#foroutput.addvar('cpy12_amp', dtype = ampls.dtype)
+
+mean = sumx1/count
+applymask(mask, mean, indices)
+applymask(mask, sumx1, indices)
+applymask(mask, sumxt, indices)
+applymask(mask, sumt, indices)
+applymask(mask, sumt2, indices)
+
+tmpt = days*sumt2 - sumt*sumt
+tmpx = days*sumx2 - sumx1*sumx1
+print(tmpt.min(), tmpt.max(), tmpt.mean() )
+tcount = 0
+xcount = 0
+tlim = tmpt.max()
+xlim = tmpx.max()
+for j in range (0, ny):
+  for i in range (0, nx):
+    if (tmpt[j,i] == 0): 
+      tmpt[j,i] = tlim
+      tcount += 1
+    if (tmpx[j,i] == 0): 
+      tmpx[j,i] = xlim
+      xcount += 1
+print("count of zero tmpt",tcount, "tmpx",xcount) 
+print(tmpt.min(), tmpt.max(), tmpt.mean() )
+slope = (days*sumxt - sumx1*sumt) / tmpt #RG: should be from trend solver
+applymask(mask, slope, indices)
+
+intercept = (sumx1/days - slope*sumt/days) #RG: ditto
+applymask(mask, slope, indices)
+
+correl = (days*sumxt - sumx1*sumt ) / (np.sqrt(tmpt) * np.sqrt(tmpx))
+applymask(mask, correl, indices)
+
+tstat = correl*sqrt(days) / (1. - correl*correl)
+applymask(mask, tstat, indices)
 
 foroutput.encodevar(sumx1, 'sumx1')
+foroutput.encodevar(mean, 'mean')
 foroutput.encodevar(sumx2, 'sumx2')
 foroutput.encodevar(sumx3, 'sumx3')
 foroutput.encodevar(sumx4, 'sumx4')
 foroutput.encodevar(sumt, 'sumt')
 foroutput.encodevar(sumxt, 'sumxt')
 foroutput.encodevar(sumt2, 'sumt2')
+foroutput.encodevar(slope, 'slope')
+foroutput.encodevar(intercept, 'intercept')
+foroutput.encodevar(correl, 'correl')
+foroutput.encodevar(tstat, 'tstat')
 foroutput.encodevar(tmin, 'tmin')
 foroutput.encodevar(tmax, 'tmax')
 foroutput.encodevar(ampls[:,:,0], 'cpy1_amp')
@@ -272,12 +324,6 @@ foroutput.encodevar(ampls[:,:,4], 'cpy5_amp')
 foroutput.encodevar(phase[:,:,4], 'cpy5_pha')
 foroutput.encodevar(ampls[:,:,5], 'cpy6_amp')
 foroutput.encodevar(phase[:,:,5], 'cpy6_pha')
-#foroutput.encodevar(ampls[:,:,6], 'cpy7_amp')
-#foroutput.encodevar(ampls[:,:,7], 'cpy8_amp')
-#foroutput.encodevar(ampls[:,:,8], 'cpy9_amp')
-#foroutput.encodevar(ampls[:,:,9], 'cpy10_amp')
-#foroutput.encodevar(ampls[:,:,10], 'cpy11_amp')
-#foroutput.encodevar(ampls[:,:,11], 'cpy12_amp')
 
 tmask = np.zeros((ny,nx))
 for k in range(0, len(indices[0]) ):
@@ -292,5 +338,3 @@ foroutput.encodescalar(days, 'days')
 
 foroutput.close()
 #------------------ End of first pass --------------------------
-
-
