@@ -24,23 +24,6 @@ omega[3] = 2.*pi/loy*4
 omega[4] = 2.*pi/loy*5
 omega[5] = 2.*pi/loy*6
 
-#omega[3] = 2.*pi/(loy*(30/2.))
-#omega[4] = 2.*pi/(loy*(30/3.))
-#omega[5] = 2.*pi/(loy*(30/4.))
-#omega[6] = 2.*pi/(loy*(30/5.))
-#omega[7] = 2.*pi/(loy*(30/6.))
-#omega[8] = 2.*pi/(loy*(30/7.))
-#omega[9] = 2.*pi/(loy*(30/8.))
-#omega[10] = 2.*pi/(loy*(30/9.))
-#omega[11] = 2.*pi/(loy*(30/10.))
-
-#omega[3] = 2.*pi/loy*4
-#omega[4] = 2.*pi/loy*5
-#omega[5] = 2.*pi/loy*6
-#omega[3] = 2.*pi/lom   + omega[0]
-#omega[4] = 2.*pi/lom*2 + omega[1]
-#omega[5] = 2.*pi/lom*3 + omega[2]
-
 #-------------------------------------------------
 # location of data files
 fbase = "/Volumes/Data/qdoi/v2.1.nc/"
@@ -51,18 +34,6 @@ nx = 1440
 ny = 720
 
 start = datetime.datetime(1981,9,1)
-#start = datetime.datetime(1982,9,1)
-#start = datetime.datetime(1990,1,1)
-#start = datetime.datetime(1994,12,31)
-
-#debug: end = datetime.datetime(1981,9,30)
-#debug: end = datetime.datetime(1982,8,31)
-#debug: end = datetime.datetime(1990,12,31)
-#ops: 
-#end = datetime.datetime(2010,8,31)
-#end = datetime.datetime(2019,12,31)
-#end = datetime.datetime(2023,12,31)
-#
 end = datetime.datetime(2024,12,8)
 
 dt = datetime.timedelta(1)
@@ -127,8 +98,24 @@ while (tag <= end ):
     sst = tmpnc.variables['sst'][0,0,:,:]
     if ( count ==  0 ):
         lons = tmpnc.variables['lon'][:]
+        #debug: print(lons, "\nlen(lons)",len(lons),  flush=True)
+        zlon = np.logical_and(lons > 190, lons < 240)
+        #debug: print(zlon[720:960], flush=True)
         lats = tmpnc.variables['lat'][:]
+        zlat = np.logical_and(lats > -5., lats < 5.)
+        #debug: print(zlat[300:420], flush=True)
+        nino34 = np.zeros((ny, nx),dtype=bool)
+        nino34[zlat,:] = True
+        nino34[:,zlon] &= True
+        print(nino34)
+        del zlon, zlat
     tmpnc.close()
+    print(count, sst[nino34].mean() )
+    #debug: del sst
+    #debug: days  += 1   # days since epoch
+    #debug: count += 1   # number of days' data
+    #debug: tag   += dt
+    #debug: continue
 
 # Accumulate moments:
     tmp = copy.deepcopy(sst)
@@ -235,19 +222,19 @@ name = "first_pass.nc"
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
 foroutput.ncoutput(name)
 foroutput.addvar('sumx1', dtype = sumx1.dtype)
-foroutput.addvar('mean', dtype = sumx1.dtype)
+foroutput.addvar('mean',  dtype = sumx1.dtype)
 foroutput.addvar('sumx2', dtype = sumx2.dtype)
 foroutput.addvar('sumx3', dtype = sumx3.dtype)
 foroutput.addvar('sumx4', dtype = sumx4.dtype)
-foroutput.addvar('sumt', dtype = sumt.dtype)
+foroutput.addvar('sumt',  dtype = sumt.dtype)
 foroutput.addvar('sumxt', dtype = sumxt.dtype)
 foroutput.addvar('sumt2', dtype = sumt2.dtype)
 foroutput.addvar('intercept', dtype = sumx1.dtype)
-foroutput.addvar('slope', dtype = sumx1.dtype)
-foroutput.addvar('correl', dtype = sumx1.dtype)
-foroutput.addvar('tstat', dtype = sumx1.dtype)
-foroutput.addvar('tmax', dtype = tmax.dtype)
-foroutput.addvar('tmin', dtype = tmin.dtype)
+foroutput.addvar('slope',    dtype = sumx1.dtype)
+foroutput.addvar('correl'    dtype = sumx1.dtype)
+foroutput.addvar('tstat',    dtype = sumx1.dtype)
+foroutput.addvar('tmax',     dtype = tmax.dtype)
+foroutput.addvar('tmin',     dtype = tmin.dtype)
 foroutput.addvar('cpy1_amp', dtype = ampls.dtype)
 foroutput.addvar('cpy1_pha', dtype = phase.dtype)
 foroutput.addvar('cpy2_amp', dtype = ampls.dtype)
@@ -289,7 +276,7 @@ slope = (days*sumxt - sumx1*sumt) / tmpt #RG: should be from trend solver
 applymask(mask, slope, indices)
 
 intercept = (sumx1/days - slope*sumt/days) #RG: ditto
-applymask(mask, intercept, indices)
+applymask(mask, slope, indices)
 
 correl = (days*sumxt - sumx1*sumt ) / (np.sqrt(tmpt) * np.sqrt(tmpx))
 applymask(mask, correl, indices)
@@ -298,19 +285,19 @@ tstat = correl*sqrt(days) / (1. - correl*correl)
 applymask(mask, tstat, indices)
 
 foroutput.encodevar(sumx1, 'sumx1')
-foroutput.encodevar(mean,  'mean')
+foroutput.encodevar(mean, 'mean')
 foroutput.encodevar(sumx2, 'sumx2')
 foroutput.encodevar(sumx3, 'sumx3')
 foroutput.encodevar(sumx4, 'sumx4')
-foroutput.encodevar(sumt,  'sumt')
+foroutput.encodevar(sumt, 'sumt')
 foroutput.encodevar(sumxt, 'sumxt')
 foroutput.encodevar(sumt2, 'sumt2')
 foroutput.encodevar(slope, 'slope')
 foroutput.encodevar(intercept, 'intercept')
 foroutput.encodevar(correl, 'correl')
-foroutput.encodevar(tstat,  'tstat')
-foroutput.encodevar(tmin,   'tmin')
-foroutput.encodevar(tmax,   'tmax')
+foroutput.encodevar(tstat, 'tstat')
+foroutput.encodevar(tmin, 'tmin')
+foroutput.encodevar(tmax, 'tmax')
 foroutput.encodevar(ampls[:,:,0], 'cpy1_amp')
 foroutput.encodevar(phase[:,:,0], 'cpy1_pha')
 foroutput.encodevar(ampls[:,:,1], 'cpy2_amp')

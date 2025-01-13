@@ -9,17 +9,18 @@ import matplotlib.pyplot as plt
 
 matplotlib.use('Agg')
 #=================================================================
-def show(bins, x, title, fbase):
+def show(bins, x, title, fbase, cmap = matplotlib.colormaps.get_cmap('bwr') ):
   bounds = np.array(bins)
   norm = matplotlib.colors.BoundaryNorm(boundaries = bounds, ncolors = 256)
 
   fig = plt.figure(figsize=(12, 9))
   ax  = fig.add_subplot(1, 1, 1, projection = proj)
-  ax.set_extent((-95, -15, 0, 75),crs=proj)
+  #wna: ax.set_extent((-95, -15, 0, 75),crs=proj)
+  #ax.set_extent((-95, -15, 0, 75),crs=proj)
   ax.coastlines(resolution='10m')
   ax.gridlines()
 
-  cs = ax.pcolormesh(lons, lats, x, norm = norm, transform=ccrs.PlateCarree() )
+  cs = ax.pcolormesh(lons, lats, x, norm = norm, cmap = cmap, transform=ccrs.PlateCarree() )
   cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.04)
   cbarlabel = '%s' % title
   cb.set_label(cbarlabel, fontsize=12)
@@ -85,9 +86,9 @@ bins = [0, 0.01, 0.1, 0.25, 0.5, 0.75, 1., 1.5, 2, 3, 5, 7.5, 10, 15 ]
 
 #RG: plot geographic map in ~deciles ----------------
 
-colors = matplotlib.colormaps.get_cmap('terrain')
+#colors = matplotlib.colormaps.get_cmap('terrain')
 #colors = matplotlib.colormaps.get_cmap('seismic')
-#colors = matplotlib.colormaps.get_cmap('bwr')
+colors = matplotlib.colormaps.get_cmap('bwr')
 
 # For nonuniform binning:
 bounds = np.array(bins)
@@ -257,6 +258,7 @@ print(hist, hist.sum() )
 #----------------------------------------------------------------------
 
 #Fraction of variance explained
+colors = matplotlib.colormaps.get_cmap('bwr')
 
 var = (sumx2 - sumx1*sumx1/days)/days
 tot_var  = np.zeros((ny,nx))
@@ -317,6 +319,7 @@ def find_bins(x, nbin):
   vmax = ceil(x.max())
   return np.linspace(vmin, vmax, nbin)
 
+colors = matplotlib.colormaps.get_cmap('bwr')
 
 print("\n\nmean")
 bins = find_bins(mean, 34)
@@ -327,10 +330,10 @@ bins = find_bins(intercept, 36)
 show(bins, intercept, "intercept", "intercept")
 
 print("\n\nslope")
-#slope *= 365.2422*10.
-#bins = [ -200, -10, -5, -2, -1, 0, 1, 2, 5, 10, 200 ]
+slope *= 365.2422*10.
 print("slope stats",slope.max(), slope.min(), slope.mean() )
-bins = find_bins(slope, 64)
+bins = [ -2, -1, -.5, -.2, -.1, 0, .1, .2, .5, 1.0, 2.00 ]
+#bins = find_bins(slope, 64)
 show(bins, slope, "slope", "slope")
 
 print("\n\ncorrel")
@@ -338,7 +341,9 @@ print("\n\ncorrel")
 bins = np.linspace(-1., 1., 33 )
 show(bins, correl, "correl", "correl")
 
-bins = find_bins(tstat, 32)
+#bins = find_bins(tstat, 32)
+print("tstat stats",tstat.max(), tstat.min(), tstat.mean() )
+bins = [-400, -63.7, -6.3, -3.078, 3.078, 6.3, 63.7, 400 ]
 show(bins, tstat, "tstat", "tstat")
 
 
@@ -347,10 +352,14 @@ res_var = (1.-frac_var1)*var
 bins = [0, 0.01, 0.0625, 0.25, 0.5, 1, 4, 9, 25 ]
 show(bins, res_var, "residual variance", "res_var")
 
+colors = matplotlib.colormaps.get_cmap('bwr')
 bins = [0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1., 1.5, 2, 3, 4, 5, 7.5 ]
-show(bins, harm1, "h1", "h1")
-show(bins, harm2, "h2", "h2")
-show(bins, harm3, "h3", "h3")
-show(bins, harm4, "h4", "h4")
-show(bins, harm5, "h5", "h5")
-show(bins, harm6, "h6", "h6")
+show(bins, harm1, "h1", "h1", cmap = colors)
+show(bins, harm2, "h2", "h2", cmap = colors)
+show(bins, harm3, "h3", "h3", cmap = colors)
+
+for i in range (0, len(bins)):
+  bins[i] /= 10.
+show(bins, harm4, "h4", "h4", cmap = colors)
+show(bins, harm5, "h5", "h5", cmap = colors)
+show(bins, harm6, "h6", "h6", cmap = colors)
