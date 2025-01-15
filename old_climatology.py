@@ -1,0 +1,213 @@
+import copy
+import datetime
+from math import *
+
+import numpy as np
+import numpy.ma as ma
+
+import netCDF4 as nc
+
+"""
+Read in first pass -- 
+  intercept, trend, harmonics 1-3 and their phase
+fn to compute Tclim(tau) given the above (tau = days since 1 Sep 1981)
+
+Second pass -- 
+  Read in daily analyses
+    subtract climatology
+    accumulate stats on residuals
+    accumulate terms for orthogonalizing w.r.t. Nino3.4
+    write out residual field for the day
+  Write out statistics on residuals
+  Write out statistics on Nino3.4 orthogonalizing
+  Maps of deviation norms
+  Maps of correlations to Nino3.4
+
+Third pass --
+  Read in daily analyses
+    subtract climatology
+    accumulate stats on residuals
+    write out residual field for the day
+  Write out stats on residuals
+  Maps of deviation norms
+
+Offline:
+  Compute + map:
+    %variance explained by mean, trend, harmonics, Nino3.4
+    Magnitude residual variance
+
+"""
+ 
+#----------------------------------------------------------------------
+
+def old_climo(epoch, tag):
+  fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+#RG: This is hard wiring somewhat to epoch 1 sep 1981
+  if (tag.month == 2 and tag.day == 29):
+    ref = datetime.datetime(epoch.year, tag.month, 28)
+  else: 
+    ref = datetime.datetime(epoch.year, tag.month, tag.day)
+
+  if (ref < epoch):
+    ref = datetime.datetime(epoch.year+1, ref.month, ref.day)
+  fname = "traditional_" + ref.strftime("%Y%m%d") + ".nc"
+
+  tmpnc = nc.Dataset(fbase + fname)
+  sst = tmpnc.variables['mean'][:,:]
+  tmpnc.close()
+ 
+  return sst
+
+def applymask(mask, grid, indices):
+  for k in range(0, len(indices[0])):
+    i = indices[1][k]
+    j = indices[0][k]
+    grid[j,i] = 0.
+
+
+
+#----------------------------------------------------------------------
+nx = 1440
+ny =  720
+loy = 365.2422 # tropical year
+freq_base = 2.*pi/loy
+
+dset = nc.Dataset("first_pass.nc", "r")
+lons = dset.variables['lon'][:]
+lats = dset.variables['lat'][:]
+
+fmask     = dset.variables['mask'][:,:]
+mean      = dset.variables['mean'][:,:]
+
+
+epoch = datetime.datetime(1981,9,1)
+#tag   = datetime.datetime(2021,9,1)
+tag   = datetime.datetime(1981,9,1)
+
+#debug: sst = old_climo(intercept, slope, ampl, phas, freq, epoch, tag)
+#debug: print(sst.max(), sst.min(), sst.mean() )
+#debug: print(sst[sst < -1.8])
+#debug: exit(0)
+
+'''
+
+Second pass --
+  Read in first pass and prep for climatology computation (above)
+  Read in daily analyses
+    subtract climatology
+    accumulate stats on residuals
+    accumulate terms for orthogonalizing w.r.t. Nino3.4
+    write out residual field for the day
+  Write out statistics on residuals
+  Write out statistics for Nino3.4 orthogonalizing
+  Maps of deviation norms
+  Maps of correlations to Nino3.4
+
+'''
+
+#-------------------------------------------------
+fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+
+# Initialize files for accumulations
+sst = np.zeros((ny,nx)) # temporary file for reading in data
+tmp = np.zeros((ny,nx))
+
+# for accumulating moments:
+sumx1 = np.zeros((ny,nx))
+sumx2 = np.zeros((ny,nx))
+sumx3 = np.zeros((ny,nx))
+sumx4 = np.zeros((ny,nx))
+#debug: print('dtype for sumx1 ',sumx1.dtype, flush=True)
+
+# for nino3.4 orthogonalization
+sumt  = np.zeros((ny,nx))
+sumxt = np.zeros((ny,nx))
+sumt2 = np.zeros((ny,nx))
+
+
+start = datetime.datetime(2011,9,1)
+#end   = datetime.datetime(2024,12,25)
+#end   = datetime.datetime(2011,12,25)
+end   = datetime.datetime(2021,8,31)
+
+dt = datetime.timedelta(1)
+tag = start
+count = 0
+while (tag <= end):
+  if (count % 30 == 0):
+    print(tag, flush=True)
+
+# Get the day's data:
+  fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
+  tmpnc = nc.Dataset(fbase + fname)
+  sst = tmpnc.variables['sst'][0,0,:,:]
+  if ( count ==  0 ):
+      lons = tmpnc.variables['lon'][:]
+      lats = tmpnc.variables['lat'][:]
+  tmpnc.close()
+
+# Accumulate moments:
+  tsst = copy.deepcopy(sst)
+  tclim = old_climo(epoch, tag)
+  tsst -= tclim
+  
+  sumx1 += tsst
+
+  sumx2 += (tsst*tsst)
+
+  sumx3 += (tsst*tsst*tsst)
+
+  sumx4 += (tsst*tsst)*(tsst*tsst)
+
+# Accumulate Nino3.4 orthogonalization info
+   #
+   #
+   #
+
+  del tclim
+  count += 1   # number of days' data
+  tag   += dt 
+#------------------------------------------------
+indices = fmask.nonzero()
+applymask(fmask, sumx1, indices)
+applymask(fmask, sumx2, indices)
+applymask(fmask, sumx3, indices)
+applymask(fmask, sumx4, indices)
+# orthog1
+# orthog2
+
+print("sumx1", sumx1.max(), sumx1.min() )
+print("sumx2", sumx2.max(), sumx2.min() )
+print("sumx3", sumx3.max(), sumx3.min() )
+print("sumx4", sumx4.max(), sumx4.min() )
+mean = sumx1 / count
+print("mean", mean.max(), mean.min() )
+
+
+# ---- .nc encoding --------------------------------------------------
+import ncoutput
+
+name = "second_pass.nc"
+
+foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
+foroutput.ncoutput(name)
+foroutput.addvar('sumx1', dtype = sumx1.dtype)
+foroutput.addvar('mean', dtype = sumx1.dtype)
+foroutput.addvar('sumx2', dtype = sumx2.dtype)
+foroutput.addvar('sumx3', dtype = sumx3.dtype)
+foroutput.addvar('sumx4', dtype = sumx4.dtype)
+
+foroutput.addvar('mask', dtype = fmask.dtype)
+foroutput.encodevar(fmask, 'mask')
+
+foroutput.encodevar(sumx1, 'sumx1')
+foroutput.encodevar(mean,  'mean')
+foroutput.encodevar(sumx2, 'sumx2')
+foroutput.encodevar(sumx3, 'sumx3')
+foroutput.encodevar(sumx4, 'sumx4')
+
+print("number of days = ",count)
+foroutput.encodescalar(count, 'days')
+
+foroutput.close()
+#------------------ End of second pass --------------------------

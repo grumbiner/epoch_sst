@@ -59,11 +59,10 @@ start = datetime.datetime(1981,9,1)
 #debug: end = datetime.datetime(1982,8,31)
 #debug: end = datetime.datetime(1990,12,31)
 #ops: 
-#end = datetime.datetime(2010,8,31)
+end = datetime.datetime(2011,8,31)
 #end = datetime.datetime(2019,12,31)
 #end = datetime.datetime(2023,12,31)
-#
-end = datetime.datetime(2024,12,8)
+# end = datetime.datetime(2024,12,8)
 
 dt = datetime.timedelta(1)
 tag = start
