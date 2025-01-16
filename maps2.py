@@ -7,38 +7,9 @@ import cartopy.crs as ccrs
 import matplotlib
 import matplotlib.pyplot as plt
 
+from functions import *
+
 matplotlib.use('Agg')
-#=================================================================
-def find_bins(x, nbin):
-  vmin = floor(x.min()) 
-  vmax = ceil(x.max())
-  return np.linspace(vmin, vmax, nbin)
-
-def show(bins, x, title, fbase, cmap = matplotlib.colormaps.get_cmap('bwr') ):
-  bounds = np.array(bins)
-  norm = matplotlib.colors.BoundaryNorm(boundaries = bounds, ncolors = 256)
-
-  fig = plt.figure(figsize=(12, 9))
-  ax  = fig.add_subplot(1, 1, 1, projection = proj)
-  #wna: ax.set_extent((-95, -15, 0, 75),crs=proj)
-  #Nino 3.4: ax.set_extent((-170, -120, -5, 5), crs=proj)
-
-  ax.coastlines(resolution='10m')
-  ax.gridlines()
-
-  cs = ax.pcolormesh(lons, lats, x, norm = norm, cmap = cmap, transform=ccrs.PlateCarree() )
-  cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.04)
-  cbarlabel = '%s' % title
-  cb.set_label(cbarlabel, fontsize=12)
-
-  plt.savefig(fbase+".png")
-  plt.close()
- 
-  hist, binedges =  np.histogram(x, bins = bins)
-  print(hist, hist.sum() )
-  print(binedges,"\n\n")
-  #debug: print(binedges)
-
 
 #=================================================================
 # given the mean values of sumx1, sumx2, sumx3, sumx4, compute

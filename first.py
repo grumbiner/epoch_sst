@@ -7,6 +7,7 @@ import numpy as np
 import numpy.ma as ma
 import netCDF4
 
+from functions import *
 #-------------------------------------------------
 from harmonic_grid import * 
 
@@ -158,13 +159,6 @@ while (tag <= end ):
     days  += 1   # days since epoch
     count += 1   # number of days' data
     tag   += dt
-
-#------------------------------------------------
-def applymask(mask, grid, indices):
-  for k in range(0, len(indices[0])):
-    i = indices[1][k]
-    j = indices[0][k]
-    grid[j,i] = 0.   
 
 #------------------------------------------------
 lda = 2*nfreq

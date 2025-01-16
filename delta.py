@@ -3,6 +3,9 @@ from math import *
 import numpy as np
 import netCDF4 as nc
 
+from functions import *
+#=================================================================
+
 d1 = sys.argv[1]
 d2 = sys.argv[2]
 first  = nc.Dataset(d1+"/first_pass.nc","r")
@@ -51,27 +54,6 @@ import matplotlib.pyplot as plt
 
 matplotlib.use('Agg')
 #=================================================================
-def show(bins, x, title, fbase):
-  bounds = np.array(bins)
-  norm = matplotlib.colors.BoundaryNorm(boundaries = bounds, ncolors = 256)
-
-  fig = plt.figure(figsize=(12, 9))
-  ax  = fig.add_subplot(1, 1, 1, projection = proj)
-  ax.coastlines(resolution='10m')
-  ax.gridlines()
-
-  cs = ax.pcolormesh(lons, lats, x, norm = norm, transform=ccrs.PlateCarree() )
-  cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.04)
-  cbarlabel = '%s' % title
-  cb.set_label(cbarlabel, fontsize=12)
-
-  plt.savefig(fbase+".png")
-  plt.close()
-
-  hist, binedges =  np.histogram(x, bins = bins)
-  print(hist, hist.sum() )
-  #debug: print(binedges)
-
 
 #------------------------------
 proj  = ccrs.PlateCarree()

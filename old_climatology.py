@@ -40,31 +40,7 @@ Offline:
  
 #----------------------------------------------------------------------
 
-def old_climo(epoch, tag):
-  fbase = "/Volumes/Data/qdoi/v2.1.nc/"
-#RG: This is hard wiring somewhat to epoch 1 sep 1981
-  if (tag.month == 2 and tag.day == 29):
-    ref = datetime.datetime(epoch.year, tag.month, 28)
-  else: 
-    ref = datetime.datetime(epoch.year, tag.month, tag.day)
-
-  if (ref < epoch):
-    ref = datetime.datetime(epoch.year+1, ref.month, ref.day)
-  fname = "traditional_" + ref.strftime("%Y%m%d") + ".nc"
-
-  tmpnc = nc.Dataset(fbase + fname)
-  sst = tmpnc.variables['mean'][:,:]
-  tmpnc.close()
- 
-  return sst
-
-def applymask(mask, grid, indices):
-  for k in range(0, len(indices[0])):
-    i = indices[1][k]
-    j = indices[0][k]
-    grid[j,i] = 0.
-
-
+from functions import *
 
 #----------------------------------------------------------------------
 nx = 1440

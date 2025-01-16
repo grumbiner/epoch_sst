@@ -7,15 +7,10 @@ import numpy as np
 import numpy.ma as ma
 import netCDF4
 
-#------------------------------------------------
-def applymask(mask, grid, indices):
-  for k in range(0, len(indices[0])):
-    i = indices[1][k]
-    j = indices[0][k]
-    grid[j,i] = 0.   
-#-------------------------------------------------
+from functions import *
 import ncoutput
 
+#------------------------------------------------
 def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 30):
   #RG: write out mean, max, min to save file
   mask =  ma.masked_array(sumx1 < -900.*n)
