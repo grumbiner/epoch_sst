@@ -11,7 +11,7 @@ from functions import *
 import ncoutput
 
 #------------------------------------------------
-def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 30):
+def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 28):
   #RG: write out mean, max, min to save file
   mask =  ma.masked_array(sumx1 < -900.*n)
   indices = mask.nonzero()

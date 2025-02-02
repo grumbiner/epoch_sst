@@ -1,8 +1,18 @@
+import copy
+from math import *
+import numpy as np
+import numpy.ma as ma
+
+import cartopy.crs as ccrs
+import matplotlib
+import matplotlib.pyplot as plt
+
+matplotlib.use('Agg')
 
 # collection bin for miscellaneous functions
 
 #=================================================================
-def show(bins, x, title, fbase):
+def show(bins, lons, lats, x, title, fbase, cmap = matplotlib.colormaps.get_cmap('bwr'), proj = ccrs.PlateCarree() ):
   bounds = np.array(bins)
   norm = matplotlib.colors.BoundaryNorm(boundaries = bounds, ncolors = 256)
 
@@ -15,7 +25,7 @@ def show(bins, x, title, fbase):
   ax.coastlines(resolution='10m')
   ax.gridlines()
 
-  cs = ax.pcolormesh(lons, lats, x, norm = norm, transform=ccrs.PlateCarree() )
+  cs = ax.pcolormesh(lons, lats, x, norm = norm, cmap = cmap, transform=ccrs.PlateCarree() )
   cb = plt.colorbar(cs, extend='both', orientation='horizontal', shrink=0.5, pad=.04)
   cbarlabel = '%s' % title
   cb.set_label(cbarlabel, fontsize=12)

@@ -8,39 +8,55 @@ import numpy.ma as ma
 import netCDF4 as nc
 
 """
-Read in first pass -- 
-  intercept, trend, harmonics 1-3 and their phase
-fn to compute Tclim(tau) given the above (tau = days since 1 Sep 1981)
+#Read in first pass -- 
+#  intercept, trend, harmonics 1-3 and their phase
 
-Second pass -- 
-  Read in daily analyses
-    subtract climatology
-    accumulate stats on residuals
-    accumulate terms for orthogonalizing w.r.t. Nino3.4
-    write out residual field for the day
-  Write out statistics on residuals
-  Write out statistics on Nino3.4 orthogonalizing
-  Maps of deviation norms
-  Maps of correlations to Nino3.4
+#fn to compute Tclim(tau) given the above (tau = days since 1 Sep 1981)
 
-Third pass --
-  Read in daily analyses
-    subtract climatology
-    accumulate stats on residuals
-    write out residual field for the day
-  Write out stats on residuals
-  Maps of deviation norms
+!Second pass -- 
+!  Read in daily analyses
+!    subtract climatology
+!    write out residual field for the day
+!    accumulate stats on residuals
+!    accumulate terms for orthogonalizing w.r.t. Nino3.4
+!  Write out statistics on residuals
+!  Write out statistics on Nino3.4 orthogonalizing
+!  Maps of deviation norms
+!  Maps of correlations to Nino3.4
 
-Offline:
-  Compute + map:
-    %variance explained by mean, trend, harmonics, Nino3.4
-    Magnitude residual variance
+#Third pass --
+#  Read in daily analyses
+#    subtract climatology
+#    accumulate stats on residuals
+#    write out residual field for the day
+#  Write out stats on residuals
+#  Maps of deviation norms
+
+#Offline:
+#  Compute + map:
+#    %variance explained by mean, trend, harmonics, Nino3.4
+#    Magnitude residual variance
 
 """
  
 #----------------------------------------------------------------------
 
 from functions import *
+import ncoutput
+
+def writeout(tsst, mask, nx, ny, lats, lons, tag):
+  #indices = mask.nonzero()
+  #applymask(mask, tsst, indices)
+  print("tsst ",tag, tsst.max(), tsst.min(), tsst.mean() )
+
+  name = "v2.1.nc/newres1_"+tag.strftime("%Y%m%d")+".nc"
+
+  foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
+  foroutput.ncoutput(name)
+  foroutput.addvar('newres1', dtype = tsst.dtype)
+  foroutput.encodevar(tsst, 'newres1')
+
+  foroutput.close()
 
 #----------------------------------------------------------------------
 nx = 1440
@@ -52,7 +68,7 @@ dset = nc.Dataset("first_pass.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
-fmask     = dset.variables['mask'][:,:]
+mask     = dset.variables['mask'][:,:]
 mean      = dset.variables['mean'][:,:]
 slope     = dset.variables['slope'][:,:]
 intercept = dset.variables['intercept'][:,:]
@@ -82,21 +98,6 @@ tag   = datetime.datetime(1981,9,1)
 #debug: print(sst.max(), sst.min(), sst.mean() )
 #debug: print(sst[sst < -1.8])
 
-'''
-
-Second pass --
-  Read in first pass and prep for climatology computation (above)
-  Read in daily analyses
-    subtract climatology
-    accumulate stats on residuals
-    accumulate terms for orthogonalizing w.r.t. Nino3.4
-    write out residual field for the day
-  Write out statistics on residuals
-  Write out statistics for Nino3.4 orthogonalizing
-  Maps of deviation norms
-  Maps of correlations to Nino3.4
-
-'''
 
 #-------------------------------------------------
 fbase = "/Volumes/Data/qdoi/v2.1.nc/"
@@ -117,10 +118,13 @@ sumxn = np.zeros((ny,nx))
 sumn  = 0.0
 sumn2 = 0.0
 
-start = datetime.datetime(2011,9,1)
-#end   = datetime.datetime(2024,12,25)
-#end   = datetime.datetime(2011,12,25)
-end   = datetime.datetime(2021,8,31)
+# Original span:
+start = datetime.datetime(1981,9,1)
+#debug: end   = datetime.datetime(1981,9,18)
+end   = datetime.datetime(2011,8,31)
+# Next Decade
+#start = datetime.datetime(2011,9,1)
+#end   = datetime.datetime(2021,8,31)
 
 dt = datetime.timedelta(1)
 tag = start
@@ -148,6 +152,8 @@ while (tag <= end):
   tsst = copy.deepcopy(sst)
   tclim = climo(intercept, slope, ampl, phas, freq, epoch, tag)
   tsst -= tclim
+# write out residual, tsst
+  writeout(tsst, mask, nx, ny, lats, lons, tag)
   
   sumx1 += tsst
   sumx2 += (tsst*tsst)
@@ -164,11 +170,11 @@ while (tag <= end):
   count += 1   # number of days' data
   tag   += dt 
 #------------------------------------------------
-indices = fmask.nonzero()
-applymask(fmask, sumx1, indices)
-applymask(fmask, sumx2, indices)
-applymask(fmask, sumx3, indices)
-applymask(fmask, sumx4, indices)
+indices = mask.nonzero()
+applymask(mask, sumx1, indices)
+applymask(mask, sumx2, indices)
+applymask(mask, sumx3, indices)
+applymask(mask, sumx4, indices)
 # orthog1
 # orthog2
 
@@ -184,7 +190,7 @@ print("mean", mean.max(), mean.min() )
 # ---- .nc encoding --------------------------------------------------
 import ncoutput
 
-name = "second_pass.nc"
+name = "newres1_30.nc"
 
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
 foroutput.ncoutput(name)
@@ -195,8 +201,8 @@ foroutput.addvar('sumx3', dtype = sumx3.dtype)
 foroutput.addvar('sumx4', dtype = sumx4.dtype)
 foroutput.addvar('sumxn', dtype = sumxn.dtype)
 
-foroutput.addvar('mask', dtype = fmask.dtype)
-foroutput.encodevar(fmask, 'mask')
+foroutput.addvar('mask', dtype = mask.dtype)
+foroutput.encodevar(mask, 'mask')
 
 foroutput.encodevar(sumx1, 'sumx1')
 foroutput.encodevar(mean,  'mean')

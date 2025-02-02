@@ -296,43 +296,43 @@ colors = matplotlib.colormaps.get_cmap('bwr')
 
 print("\n\nmean")
 bins = find_bins(mean, 34)
-show(bins, mean, "mean", "mean")
+show(bins, lons, lats, mean, "mean", "mean")
 
 print("\n\nintercept")
 bins = find_bins(intercept, 36)
-show(bins, intercept, "intercept", "intercept")
+show(bins, lons, lats, intercept, "intercept", "intercept")
 
 print("\n\nslope")
 slope *= 365.2422*10.
 print("slope stats",slope.max(), slope.min(), slope.mean() )
 bins = [ -2, -1, -.5, -.2, -.1, 0, .1, .2, .5, 1.0, 2.00 ]
 #bins = find_bins(slope, 64)
-show(bins, slope, "slope", "slope")
+show(bins, lons, lats, slope, "slope", "slope")
 
 print("\n\ncorrel")
 #bins = find_bins(correl, 32)
 bins = np.linspace(-1., 1., 33 )
-show(bins, correl, "correl", "correl")
+show(bins, lons, lats, correl, "correl", "correl")
 
 #bins = find_bins(tstat, 32)
 print("tstat stats",tstat.max(), tstat.min(), tstat.mean() )
 bins = [-400, -63.7, -6.3, -3.078, 3.078, 6.3, 63.7, 400 ]
-show(bins, tstat, "tstat", "tstat")
+show(bins, lons, lats, tstat, "tstat", "tstat")
 
 
 
 res_var = (1.-frac_var1)*var
 bins = [0, 0.01, 0.0625, 0.25, 0.5, 1, 4, 9, 25 ]
-show(bins, res_var, "residual variance", "res_var")
+show(bins, lons, lats, res_var, "residual variance", "res_var")
 
 colors = matplotlib.colormaps.get_cmap('bwr')
 bins = [0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1., 1.5, 2, 3, 4, 5, 7.5 ]
-show(bins, harm1, "h1", "h1", cmap = colors)
-show(bins, harm2, "h2", "h2", cmap = colors)
-show(bins, harm3, "h3", "h3", cmap = colors)
+show(bins, lons, lats, harm1, "h1", "h1", cmap = colors)
+show(bins, lons, lats, harm2, "h2", "h2", cmap = colors)
+show(bins, lons, lats, harm3, "h3", "h3", cmap = colors)
 
 for i in range (0, len(bins)):
   bins[i] /= 10.
-show(bins, harm4, "h4", "h4", cmap = colors)
-show(bins, harm5, "h5", "h5", cmap = colors)
-show(bins, harm6, "h6", "h6", cmap = colors)
+show(bins, lons, lats, harm4, "h4", "h4", cmap = colors)
+show(bins, lons, lats, harm5, "h5", "h5", cmap = colors)
+show(bins, lons, lats, harm6, "h6", "h6", cmap = colors)
