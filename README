@@ -1,0 +1,30 @@
+v2.1.nc -- link to directory with oiv2 original files
+	traditional -- 365 files by day of 30 yr climatology, 9/1/1981 ++
+        traditional_residual -- summary by day of year and overall of residuals of next decade
+        new_climo -- first_pass.nc -- mean, trend, harmonics, .. of 30 yrs from 9/1/1981++
+        new_residual -- 30 years minus new climatology
+
+
+python packages ---------------------------------------------------------
+ncoutput.py      -- netcdf output support
+harmonic_grid.py -- harmonic analysis support for grids FIX: polish trend+harmonics
+functions.py     -- misc. functions
+ 
+        
+new_first.py -- compute mean, slope, intercept, first 6 harmonics of annual cycle (ampl,phase), write out first_pass.nc
+delta.py     -- look at differences between two 'first pass' files (from new_first)
+maps.py      -- compute and plot mean, sd, skew, kurtosis; slope, intercept; harmonic amplitudes
+
+new_residuals1.py -- compute the stats for G-S orthogonalization w.r.t. Nino 3.4 temperatures, write out as newres1_30.nc
+map_nino.py       -- compute and plot as for maps2.py FIX: reconcile/merge/...
+maps2.py          -- FIX compute and plot maps for correlation, linear regession on to Nino 3.4
+
+FIX: compute residuals for 2011/9/1+10 years from first_pass.nc
+new_residuals2.py -- use newres1_30.nc to orthogonalize w.r.t. Nino 3.4, write out residue a) for 1981/9/1+30 years, for 2011/9/1+10 years RG
+
+
+old_first.py -- compute traditional climatology 30 years from 9/1/1981++
+old_residuals.py -- compute residuals for next decade
+oldres_maps.py   -- plot residual stats
+
+trad_residuals1.py -- doesn't really fit its name

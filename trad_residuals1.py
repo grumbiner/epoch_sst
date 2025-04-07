@@ -8,33 +8,7 @@ import numpy.ma as ma
 import netCDF4 as nc
 
 """
-Read in first pass -- 
-  intercept, trend, harmonics 1-3 and their phase
-fn to compute Tclim(tau) given the above (tau = days since 1 Sep 1981)
-
-Second pass -- 
-  Read in daily analyses
-    subtract climatology
-    accumulate stats on residuals
-    accumulate terms for orthogonalizing w.r.t. Nino3.4
-    write out residual field for the day
-  Write out statistics on residuals
-  Write out statistics on Nino3.4 orthogonalizing
-  Maps of deviation norms
-  Maps of correlations to Nino3.4
-
-Third pass --
-  Read in daily analyses
-    subtract climatology
-    accumulate stats on residuals
-    write out residual field for the day
-  Write out stats on residuals
-  Maps of deviation norms
-
-Offline:
-  Compute + map:
-    %variance explained by mean, trend, harmonics, Nino3.4
-    Magnitude residual variance
+Compute a traditional 30 year climatology by day
 
 """
  
@@ -45,41 +19,18 @@ from functions import *
 #----------------------------------------------------------------------
 nx = 1440
 ny =  720
-loy = 365.2422 # tropical year
-freq_base = 2.*pi/loy
 
 dset = nc.Dataset("first_pass.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
 fmask     = dset.variables['mask'][:,:]
-mean      = dset.variables['mean'][:,:]
-
 
 epoch = datetime.datetime(1981,9,1)
 #tag   = datetime.datetime(2021,9,1)
 tag   = datetime.datetime(1981,9,1)
 
-#debug: sst = old_climo(intercept, slope, ampl, phas, freq, epoch, tag)
-#debug: print(sst.max(), sst.min(), sst.mean() )
-#debug: print(sst[sst < -1.8])
-#debug: exit(0)
 
-'''
-
-Second pass --
-  Read in first pass and prep for climatology computation (above)
-  Read in daily analyses
-    subtract climatology
-    accumulate stats on residuals
-    accumulate terms for orthogonalizing w.r.t. Nino3.4
-    write out residual field for the day
-  Write out statistics on residuals
-  Write out statistics for Nino3.4 orthogonalizing
-  Maps of deviation norms
-  Maps of correlations to Nino3.4
-
-'''
 
 #-------------------------------------------------
 fbase = "/Volumes/Data/qdoi/v2.1.nc/"
@@ -93,16 +44,8 @@ sumx1 = np.zeros((ny,nx))
 sumx2 = np.zeros((ny,nx))
 sumx3 = np.zeros((ny,nx))
 sumx4 = np.zeros((ny,nx))
-#debug: print('dtype for sumx1 ',sumx1.dtype, flush=True)
-
-# for nino3.4 orthogonalization
-sumt  = np.zeros((ny,nx))
-sumxt = np.zeros((ny,nx))
-sumt2 = np.zeros((ny,nx))
-
 
 start = datetime.datetime(2011,9,1)
-#end   = datetime.datetime(2024,12,25)
 #end   = datetime.datetime(2011,12,25)
 end   = datetime.datetime(2021,8,31)
 
@@ -128,17 +71,9 @@ while (tag <= end):
   tsst -= tclim
   
   sumx1 += tsst
-
   sumx2 += (tsst*tsst)
-
   sumx3 += (tsst*tsst*tsst)
-
   sumx4 += (tsst*tsst)*(tsst*tsst)
-
-# Accumulate Nino3.4 orthogonalization info
-   #
-   #
-   #
 
   del tclim
   count += 1   # number of days' data
