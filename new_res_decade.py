@@ -106,10 +106,6 @@ dt = datetime.timedelta(1)
 # Now run through the data files and accumulate terms:
 
 # for accumulating moments through whole year:
-yrsumx1 = np.zeros((ny,nx))
-yrsumx2 = np.zeros((ny,nx))
-yrsumx3 = np.zeros((ny,nx))
-yrsumx4 = np.zeros((ny,nx))
 sumx1 = np.zeros((ny,nx))
 sumx2 = np.zeros((ny,nx))
 sumx3 = np.zeros((ny,nx))
@@ -128,6 +124,11 @@ while (tag <= ressend ):
 # Get the day's climatological data:
   tclim = climo(intercept, slope, ampl, phas, freq, epoch, tag)
   
+  fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d")+".nc"
+  tmpnc = netCDF4.Dataset(fbase+fname)
+  sst   = tmpnc.variables['sst'][0,0,:,:]
+  tmpnc.close
+
   sst -= tclim
 
 # Accumulate moments:
@@ -140,14 +141,9 @@ while (tag <= ressend ):
   tmp *= sst
   sumx4 += tmp
     
-  yrsumx1 += sumx1
-  yrsumx2 += sumx2
-  yrsumx3 += sumx3
-  yrsumx4 += sumx4
-
   count += 1
   tag   += dt
   
 tagyy = datetime.datetime(2025,1,1)
-writeout(lons, lats, yrsumx1, yrsumx2, yrsumx3, yrsumx4, fbase, tagyy, n = 10*365)
+writeout(lons, lats, sumx1, sumx2, sumx3, sumx4, fbase, tagyy, n = 10*365)
 #-------------------------------------------------

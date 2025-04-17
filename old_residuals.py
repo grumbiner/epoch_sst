@@ -90,13 +90,9 @@ yrsumx4 = np.zeros((ny,nx))
 
 while (tag <= end ):
   print("tag =",tag, flush=True)
-  # Initialize files for accumulations
-  sst = np.zeros((ny,nx)) # temporary file for reading in data
-  mean = np.zeros((ny,nx))
-  tmp = np.zeros((ny,nx))
 
 # Get the day's climatological data:
-  fname = "traditional_" + tag.strftime("%Y%m%d") + ".nc"
+  fname = "traditional/traditional_" + tag.strftime("%Y%m%d") + ".nc"
   tmpnc = netCDF4.Dataset(fbase + fname)
   mean = tmpnc.variables['mean'][:,:]
   tmpnc.close()

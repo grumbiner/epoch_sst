@@ -11,7 +11,7 @@ from functions import *
 import ncoutput
 
 #------------------------------------------------
-def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 28):
+def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 30):
   #RG: write out mean, max, min to save file
   mask =  ma.masked_array(sumx1 < -900.*n)
   indices = mask.nonzero()
@@ -131,7 +131,7 @@ while (tag <= end ):
     tmax = np.fmax(tmax, sst)
     tmin = np.fmin(tmin, sst)
     
-  writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, fbase, tag)
+  writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, fbase, tag, n = 30)
 
   count += 1   # number of days' data
   tag   += dt
