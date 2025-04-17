@@ -115,8 +115,8 @@ sumx4 = np.zeros((ny,nx))
 
 # for nino3.4 orthogonalization
 sumxn = np.zeros((ny,nx))
-sumn  = 0.0
-sumn2 = 0.0
+sumn  = np.zeros((ny,nx))
+sumn2 = np.zeros((ny,nx))
 
 # Original span:
 start = datetime.datetime(1981,9,1)
@@ -135,8 +135,10 @@ while (tag <= end):
 
 # Get the day's data:
   fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
+  #fname = "new_residual1/newres1_" + tag.strftime("%Y%m%d") + ".nc"
   tmpnc = nc.Dataset(fbase + fname)
   sst = tmpnc.variables['sst'][0,0,:,:]
+  #sst = tmpnc.variables['newres1'][:,:]
   if ( count ==  0 ):
       lons = tmpnc.variables['lon'][:]
       lats = tmpnc.variables['lat'][:]
@@ -170,11 +172,16 @@ while (tag <= end):
   count += 1   # number of days' data
   tag   += dt 
 #------------------------------------------------
+days = count
+
 indices = mask.nonzero()
 applymask(mask, sumx1, indices)
 applymask(mask, sumx2, indices)
 applymask(mask, sumx3, indices)
 applymask(mask, sumx4, indices)
+applymask(mask, sumxn, indices)
+applymask(mask, sumx2, indices)
+applymask(mask, sumn,  indices)
 # orthog1
 # orthog2
 
@@ -183,6 +190,8 @@ print("sumx2", sumx2.max(), sumx2.min() )
 print("sumx3", sumx3.max(), sumx3.min() )
 print("sumx4", sumx4.max(), sumx4.min() )
 print("sumxn", sumxn.max(), sumxn.min() )
+print("sumn2", sumn2.max(), sumn2.min() )
+print("sumn", sumn.max(), sumn.min() )
 mean = sumx1 / count
 print("mean", mean.max(), mean.min() )
 
@@ -200,6 +209,8 @@ foroutput.addvar('sumx2', dtype = sumx2.dtype)
 foroutput.addvar('sumx3', dtype = sumx3.dtype)
 foroutput.addvar('sumx4', dtype = sumx4.dtype)
 foroutput.addvar('sumxn', dtype = sumxn.dtype)
+foroutput.addvar('sumn2', dtype = sumxn.dtype)
+foroutput.addvar('sumn', dtype = sumxn.dtype)
 
 foroutput.addvar('mask', dtype = mask.dtype)
 foroutput.encodevar(mask, 'mask')
@@ -210,11 +221,28 @@ foroutput.encodevar(sumx2, 'sumx2')
 foroutput.encodevar(sumx3, 'sumx3')
 foroutput.encodevar(sumx4, 'sumx4')
 foroutput.encodevar(sumxn, 'sumxn')
+foroutput.encodevar(sumn2, 'sumn2')
+foroutput.encodevar(sumn, 'sumn')
+
+tmpn = days*sumn2 - sumn*sumn
+tmpx = days*sumx2 - sumx1*sumx1
+tmpx[tmpx == 0 ] = 1
+print(tmpn.min(), tmpn.max(), tmpn.mean() )
+print(tmpx.min(), tmpx.max(), tmpx.mean() )
+
+slope     = (days*sumxn - sumx1*sumn) / tmpn
+print('slope',slope.max(), slope.min(), slope.mean(), flush=True )
+
+intercept = (sumx1/days - slope*sumn/days)
+print('intercept',intercept.max(), intercept.min(), intercept.mean(), flush=True )
+
+correl    = (days*sumxn - sumx1*sumn) / np.sqrt(tmpn) / np.sqrt(tmpx)
+print('correl',correl.max(), correl.min(), correl.mean(), flush=True )
+
+
 
 print("number of days = ",count)
 foroutput.encodescalar(count, 'days')
-foroutput.encodescalar(sumn2, 'sumn2')
-foroutput.encodescalar(sumn, 'sumn')
 
 foroutput.close()
 #------------------ End of second pass --------------------------

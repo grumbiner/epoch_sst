@@ -23,11 +23,11 @@ sumx3 = dset.variables['sumx3'][:,:]
 sumx4 = dset.variables['sumx4'][:,:]
 mean = dset.variables['mean'][:,:]
 sumxn = dset.variables['sumxn'][:,:]
+sumn2 = dset.variables['sumn2'][:,:]
+sumn = dset.variables['sumn'][:,:]
 
 # scalars saved in global attributes
 days = getattr(dset, 'days')
-sumn = getattr(dset, 'sumn')
-sumn2 = getattr(dset, 'sumn2')
 
 print("mean nino3.4 ",sumn/days)
 
@@ -70,7 +70,7 @@ sdev = np.sqrt(var)
 bins = [0., 0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0, 12.5 ]
 show(bins, lons, lats, sdev, "sdev", "sdev", cmap = colors)
 
-ninocorr = sumxn / sqrt(sumn2) / np.sqrt(sumx2)
+ninocorr = sumxn / np.sqrt(sumn2) / np.sqrt(sumx2)
 print("ninocorr ",ninocorr.max(), ninocorr.min(), ninocorr.mean() )
 bins = np.linspace(-1,1,17)
 show(bins, lons, lats, ninocorr, "nino", "nino", cmap = colors)

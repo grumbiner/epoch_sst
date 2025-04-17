@@ -278,6 +278,7 @@ for j in range (0, ny):
       xcount += 1
 print("count of zero tmpt",tcount, "tmpx",xcount) 
 print(tmpt.min(), tmpt.max(), tmpt.mean() )
+
 slope = (days*sumxt - sumx1*sumt) / tmpt #RG: should be from trend solver
 applymask(mask, slope, indices)
 
