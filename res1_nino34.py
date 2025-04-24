@@ -130,7 +130,7 @@ dt = datetime.timedelta(1)
 tag = start
 count = 0
 while (tag <= end):
-  if (count % 30 == 0):
+  if (count % 90 == 0):
     print(tag, flush=True)
 
 # Get the day's data:
