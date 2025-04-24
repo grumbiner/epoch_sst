@@ -16,40 +16,40 @@ def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 30):
   mask =  ma.masked_array(sumx1 < -900.*n)
   indices = mask.nonzero()
   
-  applymask(mask, sumx1, indices)
-  applymask(mask, sumx2, indices)
-  applymask(mask, sumx3, indices)
-  applymask(mask, sumx4, indices)
+  #applymask(mask, sumx1, indices)
+  #applymask(mask, sumx2, indices)
+  #applymask(mask, sumx3, indices)
+  #applymask(mask, sumx4, indices)
   
-  print("sumx1", sumx1.max(), sumx1.min() )
-  print("sumx2", sumx2.max(), sumx2.min() )
-  print("sumx3", sumx3.max(), sumx3.min() )
-  print("sumx4", sumx4.max(), sumx4.min() )
-  print("tmax", tmax.max() , tmax.min() )
-  print("tmin", tmin.max() , tmin.min() )
+  #print("sumx1", sumx1.max(), sumx1.min() )
+  #print("sumx2", sumx2.max(), sumx2.min() )
+  #print("sumx3", sumx3.max(), sumx3.min() )
+  #print("sumx4", sumx4.max(), sumx4.min() )
+  #print("tmax", tmax.max() , tmax.min() )
+  #print("tmin", tmin.max() , tmin.min() )
 
   name = base+"traditional_"+tag.strftime("%Y%m%d")+".nc"
 
   foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
   foroutput.ncoutput(name)
-  foroutput.addvar('sumx1', dtype = sumx1.dtype)
+  #foroutput.addvar('sumx1', dtype = sumx1.dtype)
   foroutput.addvar('mean', dtype = sumx1.dtype)
-  foroutput.addvar('sumx2', dtype = sumx2.dtype)
-  foroutput.addvar('sumx3', dtype = sumx3.dtype)
-  foroutput.addvar('sumx4', dtype = sumx4.dtype)
-  foroutput.addvar('tmax', dtype = tmax.dtype)
-  foroutput.addvar('tmin', dtype = tmin.dtype)
+  #foroutput.addvar('sumx2', dtype = sumx2.dtype)
+  #foroutput.addvar('sumx3', dtype = sumx3.dtype)
+  #foroutput.addvar('sumx4', dtype = sumx4.dtype)
+  #foroutput.addvar('tmax', dtype = tmax.dtype)
+  #foroutput.addvar('tmin', dtype = tmin.dtype)
   
   mean = sumx1/n
   applymask(mask, mean, indices)
   
-  foroutput.encodevar(sumx1, 'sumx1')
+  #foroutput.encodevar(sumx1, 'sumx1')
   foroutput.encodevar(mean,  'mean')
-  foroutput.encodevar(sumx2, 'sumx2')
-  foroutput.encodevar(sumx3, 'sumx3')
-  foroutput.encodevar(sumx4, 'sumx4')
-  foroutput.encodevar(tmin,   'tmin')
-  foroutput.encodevar(tmax,   'tmax')
+  #foroutput.encodevar(sumx2, 'sumx2')
+  #foroutput.encodevar(sumx3, 'sumx3')
+  #foroutput.encodevar(sumx4, 'sumx4')
+  #foroutput.encodevar(tmin,   'tmin')
+  #foroutput.encodevar(tmax,   'tmax')
   
   tmask = np.zeros((ny,nx))
   for k in range(0, len(indices[0]) ):
@@ -75,8 +75,10 @@ nx = 1440
 ny = 720
 
 # Start-finish, but will be iterating through next 30 years
-start = datetime.datetime(1981,9,1)
-end = datetime.datetime(1982,8,31)
+#start = datetime.datetime(1981,9,1)
+#end = datetime.datetime(1982,8,31)
+start = datetime.datetime(1991,1,1)
+end = datetime.datetime(1991,12,31)
 
 dt = datetime.timedelta(1)
 

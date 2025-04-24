@@ -307,7 +307,7 @@ slope *= 365.2422*10.
 print("slope stats",slope.max(), slope.min(), slope.mean() )
 bins = [ -2, -1, -.5, -.2, -.1, 0, .1, .2, .5, 1.0, 2.00 ]
 #bins = find_bins(slope, 64)
-show(bins, lons, lats, slope, "slope", "slope")
+show(bins, lons, lats, slope, "trend (K/decade)", "slope")
 
 print("\n\ncorrel")
 #bins = find_bins(correl, 32)
