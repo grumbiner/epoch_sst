@@ -72,8 +72,6 @@ ny = 720
 start = datetime.datetime(1981,9,1)
 end = datetime.datetime(1982,8,31)
 
-resstart = datetime.datetime(2011,9,1)
-ressend  = datetime.datetime(2021,8,31)
 dt = datetime.timedelta(1)
 
 #---------------------------------------------

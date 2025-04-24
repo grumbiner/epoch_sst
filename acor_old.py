@@ -16,7 +16,7 @@ import ncoutput
 #  Compute a traditional style climatology, day by day for 30 years
 #-------------------------------------------------
 # location of data files
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+fbase = "/Volumes/Data/qdoi/v2.1.nc/traditional_residual/"
 
 # Defining the quarter degree grid
 nx = 1440
@@ -46,14 +46,10 @@ while (tag <= end ):
     print("tag =",tag, flush=True)
 
 # Get the day's data:
-#  fname = "newres1_" + tag.strftime("%Y%m%d") + ".nc"
-#  fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
   fname = "res_traditional_" + tag.strftime("%Y%m%d") + ".nc"
 
   if not (tag.month == 2 and tag.day == 29):
     tmpnc = netCDF4.Dataset(fbase + fname)
-    #sst = tmpnc.variables['newres1'][:,:]
-    #sst = tmpnc.variables['sst'][0,0,:,:]
     sst = tmpnc.variables['tradres'][:,:]
     tmpnc.close()
   # sst persists for leap days

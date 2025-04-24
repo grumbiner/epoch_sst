@@ -73,13 +73,13 @@ show(bins, lons, lats, sdev, "sdev", "sdev", cmap = colors)
 ninocorr = sumxn / np.sqrt(sumn2) / np.sqrt(sumx2)
 print("ninocorr ",ninocorr.max(), ninocorr.min(), ninocorr.mean() )
 bins = np.linspace(-1,1,17)
-show(bins, lons, lats, ninocorr, "nino", "nino", cmap = colors)
+show(bins, lons, lats, ninocorr, "correlation to Niño 3.4", "nino", cmap = colors)
  
 gram = sumxn / sumn2
 print("gram ", gram.max(), gram.min(), gram.mean() )
 gram = np.maximum(gram, -6.0)
 bins = np.linspace(-6., 6., 25)
-show(bins, lons, lats, gram, "gram", "gram")
+show(bins, lons, lats, gram, "amplitude", "gram")
 
 cmap = matplotlib.colormaps.get_cmap('Grays')
 bins = np.linspace(-0., 10., 23)

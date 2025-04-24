@@ -53,19 +53,19 @@ ny = 720
 
 start = datetime.datetime(1981,9,1)
 #start = datetime.datetime(1982,9,1)
-#start = datetime.datetime(1991,1,1)
+start = datetime.datetime(1991,1,1)
 #start = datetime.datetime(1994,12,31)
 
 #debug: end = datetime.datetime(1981,9,30)
 #debug: end = datetime.datetime(1982,8,31)
 #debug: end = datetime.datetime(1990,12,31)
 #ops: 
-end = datetime.datetime(2011,8,31)
-#end = datetime.datetime(2020,12,31)
+#end = datetime.datetime(2011,8,31)
+end = datetime.datetime(2020,12,31)
 #end = datetime.datetime(2023,12,31)
 # end = datetime.datetime(2024,12,8)
 
-epoch = datetime.datetime(1981,9,1)
+epoch = datetime.datetime(1991,1,1)
 
 dt = datetime.timedelta(1)
 tag = start
@@ -225,7 +225,7 @@ for j in range(0, nfreq):
 #-------------------------------------------------
 import ncoutput
 
-name = "first_pass.nc"
+name = "epoch1991.nc"
 
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
 foroutput.ncoutput(name)
