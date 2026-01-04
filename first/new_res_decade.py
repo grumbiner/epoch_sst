@@ -71,17 +71,19 @@ fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 # Defining the quarter degree grid
 nx = 1440
 ny = 720
-loy = 365.2422 #days, tropical year
+loy       = 365.2422 #days, tropical year
 freq_base = 2.*pi/loy
 
-# Read in new climatology -------------------------
-epoch = datetime.datetime(1981,9,1)
+dt = datetime.timedelta(1)
 
-dset = netCDF4.Dataset("first_pass.nc", "r")
+# Read in new style climatology -------------------------
+epoch = datetime.datetime(1991,1,1)
+
+dset = netCDF4.Dataset("epoch1991.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
-mask     = dset.variables['mask'][:,:]
+mask      = dset.variables['mask'][:,:]
 mean      = dset.variables['mean'][:,:]
 slope     = dset.variables['slope'][:,:]
 intercept = dset.variables['intercept'][:,:]
@@ -103,9 +105,8 @@ phas *= pi/180.
 
 
 # Ensuing decade
-resstart = datetime.datetime(2011,9,1)
-ressend  = datetime.datetime(2021,8,31)
-dt = datetime.timedelta(1)
+resstart = datetime.datetime(2011,1,1)
+ressend  = datetime.datetime(2011,12,31)
 
 #---------------------------------------------
 # Now run through the data files and accumulate terms:

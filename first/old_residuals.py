@@ -1,5 +1,5 @@
 '''
-Compute the residuals from the traditional climatology
+Compute the residuals for a decade following the 30 years used for the traditional climatology
 '''
 
 #from math import *
@@ -63,8 +63,6 @@ def writeout(flons, flats, fsumx1, fsumx2, fsumx3, fsumx4, base, ftag, n = 28):
 
 
 #-------------------------------------------------
-#  Compute a traditional style climatology, day by day for 30 years
-#-------------------------------------------------
 # location of data files
 fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 #file name format: "oisst-avhrr-v02r01.YYYYMMDD.nc"
@@ -73,29 +71,28 @@ fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 nx = 1440
 ny = 720
 
-# Start-finish for traditional climatology, but will be iterating through following decade
-start = datetime.datetime(1981,9,1)
-end = datetime.datetime(1982,8,31)
-
 dt = datetime.timedelta(1)
+
+# Start-finish for traditional climatology, but will be iterating through following decade
+#   and writing out residuals
+epoch = datetime.datetime(1981,9,1)
+end  = epoch
+end += 364*dt
 
 #---------------------------------------------
 # Now run through the data files and accumulate terms:
-
-tag = start
-count = 0
-
-# for accumulating moments through whole year:
 yrsumx1 = np.zeros((ny,nx))
 yrsumx2 = np.zeros((ny,nx))
 yrsumx3 = np.zeros((ny,nx))
 yrsumx4 = np.zeros((ny,nx))
 
+tag = epoch
+count = 0
 while (tag <= end ):
   print("tag =",tag, flush=True)
 
 # Get the day's climatological data:
-  fname = "traditional/traditional_" + tag.strftime("%Y%m%d") + ".nc"
+  fname = "traditional_" + tag.strftime("%Y%m%d") + ".nc"
   tmpnc = netCDF4.Dataset(fbase + fname)
   mean = tmpnc.variables['mean'][:,:]
   tmpnc.close()
@@ -136,6 +133,7 @@ while (tag <= end ):
   yrsumx2 += sumx2
   yrsumx3 += sumx3
   yrsumx4 += sumx4
+  del sumx1, sumx2, sumx3, sumx4
 
   count += 1
   tag   += dt

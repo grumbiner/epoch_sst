@@ -55,18 +55,15 @@ fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 nx = 1440
 ny = 720
 
-# Start-finish, but will be iterating through next 30 years
-#start = datetime.datetime(1981,9,1)
-#end = datetime.datetime(1982,8,31)
-start = datetime.datetime(1991,1,1)
-end = datetime.datetime(1991,12,31)
-
 dt = datetime.timedelta(1)
+# Start-finish, but will be iterating through next 30 years
+epoch = datetime.datetime(1981,9,1)
+end = epoch + 364*dt
 
 #---------------------------------------------
 # Now run through the data files and accumulate terms:
 
-tag = start
+tag = epoch
 count = 0
 
 while (tag <= end ):

@@ -84,7 +84,6 @@ def old_climo(epoch, tag):
   '''
   fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 
-  #RG: This is hard wiring somewhat to epoch 1 Sep 1981
   if (tag.month == 2 and tag.day == 29):
     ref = datetime.datetime(epoch.year, tag.month, 28)
   else:

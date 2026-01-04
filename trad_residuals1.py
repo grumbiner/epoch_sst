@@ -8,22 +8,22 @@ import copy
 import datetime
 
 import numpy as np
-
 import netCDF4 as nc
 
 #----------------------------------------------------------------------
-
 from functions import *
 import ncoutput
 
 #----------------------------------------------------------------------
 nx = 1440
 ny =  720
+dt = datetime.timedelta(1)
 
 dset = nc.Dataset("epoch1991.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 fmask  = dset.variables['mask'][:,:]
+dset.close()
 
 epoch = datetime.datetime(1991,1,1)
 
@@ -40,29 +40,24 @@ sumx2 = np.zeros((ny,nx))
 sumx3 = np.zeros((ny,nx))
 sumx4 = np.zeros((ny,nx))
 
-start = datetime.datetime(1991,1,1)
-#end   = datetime.datetime(2011,12,25)
 end   = datetime.datetime(2020,12,31)
 
-dt = datetime.timedelta(1)
-tag = start
+tag = epoch
 count = 0
 while (tag <= end):
   if (count % 30 == 0):
     print(tag, flush=True)
 
+  tclim = old_climo(epoch, tag)
+
 # Get the day's data:
   fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
   tmpnc = nc.Dataset(fbase + fname)
   sst = tmpnc.variables['sst'][0,0,:,:]
-  if ( count ==  0 ):
-      lons = tmpnc.variables['lon'][:]
-      lats = tmpnc.variables['lat'][:]
   tmpnc.close()
 
 # Accumulate moments:
   tsst = copy.deepcopy(sst)
-  tclim = old_climo(epoch, tag)
   tsst -= tclim
 
   sumx1 += tsst

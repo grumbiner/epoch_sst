@@ -37,12 +37,6 @@ harm3 = dset.variables['cpy3_amp'][:,:]
 harm4 = dset.variables['cpy4_amp'][:,:]
 harm5 = dset.variables['cpy5_amp'][:,:]
 harm6 = dset.variables['cpy6_amp'][:,:]
-#harm7 = dset.variables['cpy7_amp'][:,:]
-#harm8 = dset.variables['cpy8_amp'][:,:]
-#harm9 = dset.variables['cpy9_amp'][:,:]
-#harm10 = dset.variables['cpy10_amp'][:,:]
-#harm11 = dset.variables['cpy11_amp'][:,:]
-#harm12 = dset.variables['cpy12_amp'][:,:]
 
 # scalars saved in global attributes
 days = getattr(dset, 'days')

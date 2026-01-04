@@ -35,27 +35,17 @@ fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 # Defining the quarter degree grid
 nx = 1440
 ny = 720
-
-start = datetime.datetime(1981,9,1)
-#start = datetime.datetime(1982,9,1)
-start = datetime.datetime(1991,1,1)
-#start = datetime.datetime(1994,12,31)
-
-#debug: end = datetime.datetime(1981,9,30)
-#debug: end = datetime.datetime(1982,8,31)
-#debug: end = datetime.datetime(1990,12,31)
-#ops:
-#end = datetime.datetime(2011,8,31)
-end = datetime.datetime(2020,12,31)
-#end = datetime.datetime(2023,12,31)
-# end = datetime.datetime(2024,12,8)
-
-epoch = datetime.datetime(1991,1,1)
-
 dt = datetime.timedelta(1)
-tag = start
+
+epoch = datetime.datetime(1981,9,1)
+end = datetime.datetime(2011,8,31)
+
+#epoch = datetime.datetime(1991,1,1)
+#end = datetime.datetime(2020,12,31)
+
 
 # quick check that all data files exist
+tag = epoch
 errcount = 0
 while (tag <= end and errcount < 90 ):
     fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
@@ -99,9 +89,8 @@ tmin.fill(45.0)
 #---------------------------------------------
 # Now run through the data files and accumulate terms:
 
-tag = start
+tag = epoch
 days = (tag - epoch).days
-days  = 0
 count = 0
 n0   = days
 while (tag <= end ):
@@ -148,13 +137,10 @@ while (tag <= end ):
     tag   += dt
 
 #------------------------------------------------
-lda = 2*nfreq
-coeff = np.zeros((lda, lda))
+lda      = 2*nfreq
+coeff    = np.zeros((lda, lda))
 harmsums = np.zeros((ny, nx, nfreq*2))
-alpha    = np.zeros((ny, nx, nfreq))
-beta     = np.zeros((ny, nx, nfreq))
 
-#harmonic_coeffs(coeff, omega, days, nfreq)
 harmonic_coeffs(coeff, omega, count, nfreq, n0 = n0) # rg: probably need n0 here, too.
 
 mean = sumx1/count
@@ -163,6 +149,8 @@ for j in range(0, nfreq):
   harmsums[:,:,2*j+1]  = hsum2[:,:,j ]
 
 # solve for harmonics-only
+alpha    = np.zeros((ny, nx, nfreq))
+beta     = np.zeros((ny, nx, nfreq))
 harmonic_solve(coeff, harmsums, alpha, beta, nfreq)
 
 #trend_harmonic_solve(coeff2, sumx1, sumxt, sumycos, sumysin,
@@ -210,7 +198,7 @@ for j in range(0, nfreq):
         phase[k,l,j] -= 360.
 
 #-------------------------------------------------
-name = "epoch1991.nc"
+name = f"epoch{epoch.year:4d}.nc"
 
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
 foroutput.ncoutput(name)
