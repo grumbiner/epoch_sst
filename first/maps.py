@@ -1,4 +1,5 @@
-#from math import *
+import datetime
+
 import numpy as np
 from numpy import ma
 
@@ -18,8 +19,9 @@ matplotlib.use('Agg')
 
 nx = 1440
 ny =  720
+epoch = datetime.datetime(1981,9,1)
 
-dset = nc.Dataset("epoch1991.nc", "r")
+dset = nc.Dataset(f"epoch{epoch.year:4d}.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 fmask = dset.variables['mask'][:,:]

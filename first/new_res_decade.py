@@ -77,9 +77,9 @@ freq_base = 2.*pi/loy
 dt = datetime.timedelta(1)
 
 # Read in new style climatology -------------------------
-epoch = datetime.datetime(1991,1,1)
+epoch = datetime.datetime(1981,9,1)
 
-dset = netCDF4.Dataset("epoch1991.nc", "r")
+dset = netCDF4.Dataset(f"epoch{epoch.year:4d}.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
