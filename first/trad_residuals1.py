@@ -19,13 +19,15 @@ nx = 1440
 ny =  720
 dt = datetime.timedelta(1)
 
-dset = nc.Dataset("epoch1991.nc", "r")
+epoch = datetime.datetime(1981,9,1)
+#end   = datetime.datetime(2020,12,31)
+end   = datetime.datetime(2010,8,31)
+
+dset = nc.Dataset(f"epoch{epoch.year:4d}.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 fmask  = dset.variables['mask'][:,:]
 dset.close()
-
-epoch = datetime.datetime(1991,1,1)
 
 #-------------------------------------------------
 fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
@@ -39,8 +41,6 @@ sumx1 = np.zeros((ny,nx))
 sumx2 = np.zeros((ny,nx))
 sumx3 = np.zeros((ny,nx))
 sumx4 = np.zeros((ny,nx))
-
-end   = datetime.datetime(2020,12,31)
 
 tag = epoch
 count = 0

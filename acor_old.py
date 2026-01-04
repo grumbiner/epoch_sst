@@ -1,7 +1,8 @@
 '''
-#  Compute a traditional style climatology, day by day for 30 years
+Select a point and analyze the residuals from climatology during the 30 years
+#  hardwired data point: series[count] = sst[int(ny*3/4), 1260 ]
 '''
-#from math import *
+
 import datetime
 
 import numpy as np
@@ -9,9 +10,7 @@ import scipy
 import netCDF4
 
 from functions import *
-#import ncoutput
 
-#------------------------------------------------
 #-------------------------------------------------
 # location of data files
 fbase = "/Volumes/Data2/qdoi/v2.1.nc/traditional_residual/"
@@ -21,10 +20,10 @@ nx = 1440
 ny = 720
 
 # Start-finish, but will be iterating through next 30 years
-start = datetime.datetime(1981,9,1)
+epoch = datetime.datetime(1981,9,1)
 #end = datetime.datetime(1982,8,31)
 end = datetime.datetime(2011,8,31)
-nt = (end - start).days + 1
+nt = (end - epoch).days + 1
 print("days ",nt)
 
 dt = datetime.timedelta(1)
@@ -32,7 +31,7 @@ series = np.zeros(nt)
 #---------------------------------------------
 # Now run through the data files and accumulate terms:
 
-tag = start
+tag = epoch
 count = 0
 sst = np.zeros((ny,nx)) # temporary file for reading in data
 

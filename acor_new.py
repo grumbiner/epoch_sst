@@ -1,5 +1,7 @@
 '''
-#  Compute a traditional style climatology, day by day for 30 years
+#  Compute autocorrelations of residuals from newstyle climatology
+  # 45.125 N, 315.125E (44.875 W)
+  series[count] = sst[int(ny*3/4), 1260 ]
 '''
 import datetime
 
@@ -18,10 +20,10 @@ nx = 1440
 ny = 720
 
 # Start-finish, but will be iterating through next 30 years
-start = datetime.datetime(1981,9,1)
+epoch = datetime.datetime(1981,9,1)
 #end = datetime.datetime(1982,8,31)
 end = datetime.datetime(2011,8,31)
-nt = (end - start).days + 1
+nt = (end - epoch).days + 1
 print("days ",nt)
 stride = 4
 
@@ -30,8 +32,7 @@ series = np.zeros(nt)
 #---------------------------------------------
 # Now run through the data files and accumulate terms:
 
-tag = start
-
+tag = epoch
 count = 0
 
 sst = np.zeros((ny,nx)) # temporary file for reading in data

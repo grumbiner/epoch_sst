@@ -22,7 +22,10 @@ FIX: compute residuals for 2011/9/1+10 years from first_pass.nc
 
 
 old_first.py -- compute traditional climatology 30 years from 9/1/1981++
-old_residuals.py -- compute residuals for next decade
 oldres_maps.py   -- plot residual stats
 
 trad_residuals1.py -- doesn't really fit its name. Computes a second pass estimating moments (sumx2 etc.) using deviations from climatology, hopefully more accurately than first_pass working with full temperatures.
+
+
+old_residuals.py -- compute residuals for next decade
+new_res_decade.py -- new climo compute residuals for the next decade

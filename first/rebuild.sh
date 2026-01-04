@@ -13,4 +13,7 @@ time python3 maps.py      > gamma  # plot the trend and harmonics for epochal cl
 time python3 old_residuals.py > delta # traditional climatology 
 time python3 new_res_decade.py > epsi # new climatology
 
- 
+# Recompute sumx1, sumx2, sumx3, sumx4 after subtracting off the traditional climatology 
+#  -- same epoch. Numerics check.
+time python3 trad_residuals1.py > zeta
+

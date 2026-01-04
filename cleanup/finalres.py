@@ -1,6 +1,5 @@
 ''' legacy -- plot mean from a.nc and print its histogram '''
 
-#from math import *
 import numpy as np
 
 import netCDF4 as nc
@@ -25,6 +24,7 @@ print("mean ",mean.max(), mean.min(), mean.mean() )
 
 # scalars saved in global attributes
 days = getattr(dset, 'days')
+dset.close()
 
 #----------------------------------------------------------------------
 zeros = np.zeros((ny,nx))
