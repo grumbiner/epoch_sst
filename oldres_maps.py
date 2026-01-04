@@ -1,5 +1,8 @@
+'''
+# given the mean values of sumx1, sumx2, sumx3, sumx4, compute
+#    mean, sd, skew, kurtosis and plot them
+'''
 import sys
-from math import *
 import numpy as np
 import numpy.ma as ma
 
@@ -8,8 +11,6 @@ import netCDF4 as nc
 from functions import *
 
 #=================================================================
-# given the mean values of sumx1, sumx2, sumx3, sumx4, compute
-#    mean, sd, skew, kurtosis
 
 nx = 1440
 ny =  720
@@ -69,7 +70,7 @@ bins = find_bins(sumx4, 32)
 #bins = [0, 1, 16, 81, 625, 1296, 2401, 4096, 10000 ]
 show(bins, lons, lats, sumx4, "s4", "s4", cmap = colors)
 
-var = (sumx2*days - mean*mean)
+var = sumx2*days - mean*mean
 var = np.maximum(var, 0)
 print('var ',var.min(), var.max() )
 bins = find_bins(var, 32)
@@ -80,4 +81,3 @@ sdev = np.sqrt(var)
 bins = find_bins(sdev, 32)
 #bins = [0., 0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0, 12.5 ]
 show(bins, lons, lats, sdev, "sdev", "sdev", cmap = colors)
-

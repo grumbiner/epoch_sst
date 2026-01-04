@@ -1,9 +1,16 @@
+'''
+ncoutput holds tools for writing out netcdf4 data
+'''
+
 from datetime import date
 import numpy as np
 
 import netCDF4 as nc
 #-------------------------------------------------
 class ncoutput:
+  '''
+  ncoutput holds tools for writing out netcdf4 data
+  '''
   def __init__(self, nx, ny, lats, lons, name):
     self.name  = name
     self.nx    = nx
@@ -14,6 +21,7 @@ class ncoutput:
     self.var   = []
 
   def ncoutput(self, fname):
+    ''' ncoutput -- ncoutput.ncoutput(fname) fname = file name for output '''
     self.ncfile = nc.Dataset(fname, mode='w', format='NETCDF4')
 
     #Generic global header info:
@@ -47,6 +55,8 @@ class ncoutput:
     #debug: print("leaving ncoutput", flush=True)
 
   def addvar(self, vname, dtype):
+    ''' ncoutput.addvar(vname, dtype) -- add a variable for output, name = vname, 
+        data type = dtype '''
     fill = -999.0
 
     tmp = self.ncfile.createVariable(vname, dtype, ( 'lat','lon'), fill_value=fill)
@@ -56,17 +66,20 @@ class ncoutput:
     #debug: print("leaving addvar", flush=True)
 
   def encodevar(self, allvalues, vname):
+    ''' ncoutput.encodevar(allvalues, vname) -- 
+            allvalues is a 2d array of numbers, 
+            vname is the variable's name 
+    '''
     #debug: print("entering encodevar", flush=True)
     if (self.nx*self.ny != 0) :
       self.ncfile.variables[vname][:,:] = allvalues
 
   def encodescalar(self, value, vname):
+    ''' ncoutput.encodescalar(value, vname) -- write out a scalar = value, with name vname '''
     #debug: print("entering encodescalar", flush=True)
     self.ncfile.setncattr(vname, value)
 
   def close(self):
-    # close netcdf file associated w. patch
+    ''' close netcdf file '''
     self.ncfile.close()
-
 #-------------------------------------------------
-

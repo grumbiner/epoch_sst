@@ -1,22 +1,17 @@
-from math import *
-import os
+'''
+#  Compute a traditional style climatology, day by day for 30 years
+'''
 import datetime
-import copy
 
 import numpy as np
-import numpy.ma as ma
 import netCDF4
+import scipy
 
 from functions import *
-import ncoutput
 
-#------------------------------------------------
-
-#-------------------------------------------------
-#  Compute a traditional style climatology, day by day for 30 years
 #-------------------------------------------------
 # location of data files
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 
 # Defining the quarter degree grid
 nx = 1440
@@ -63,7 +58,7 @@ while (tag <= end ):
 
   count += 1   # number of days' data
   tag   += dt
-  
+
 #-------------------------------------------------
 print('done')
 
@@ -71,7 +66,6 @@ series -= np.mean(series)
 for i in range(0, len(series) ):
   print(i, series[i])
 
-import scipy
 auto = scipy.signal.correlate(series, series, mode='full')
 auto /= np.max(auto)
 for i in range(0,len(auto)):
@@ -82,4 +76,3 @@ yf = scipy.fft.fftfreq(len(series), 1)
 y = np.abs(y)*2/len(series)
 for i in range(0, len(y)):
   print(i, y[i], yf[i])
-

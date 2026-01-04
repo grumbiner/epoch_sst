@@ -1,12 +1,3 @@
-import copy
-import datetime
-from math import *
-
-import numpy as np
-import numpy.ma as ma
-
-import netCDF4 as nc
-
 """
 #Read in first pass -- 
 #  intercept, trend, harmonics 1-3 and their phase
@@ -38,25 +29,30 @@ import netCDF4 as nc
 #    Magnitude residual variance
 
 """
- 
-#----------------------------------------------------------------------
+
+import copy
+import datetime
+from math import pi
+
+import numpy as np
+
+import netCDF4 as nc
 
 from functions import *
 import ncoutput
 
-def writeout(tsst, mask, nx, ny, lats, lons, tag):
-  #indices = mask.nonzero()
-  #applymask(mask, tsst, indices)
-  print("tsst ",tag, tsst.max(), tsst.min(), tsst.mean() )
+#----------------------------------------------------------------------
+def writeout(ftsst, fnx, fny, flats, flons):
+  print("tsst ",tag, ftsst.max(), ftsst.min(), ftsst.mean() )
 
-  name = "v2.1.nc/newres1_"+tag.strftime("%Y%m%d")+".nc"
+  f2name = "v2.1.nc/newres1_"+tag.strftime("%Y%m%d")+".nc"
 
-  foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
-  foroutput.ncoutput(name)
-  foroutput.addvar('newres1', dtype = tsst.dtype)
-  foroutput.encodevar(tsst, 'newres1')
+  toutput = ncoutput.ncoutput(fnx, fny, flats, flons, f2name)
+  toutput.ncoutput(f2name)
+  toutput.addvar('newres1', dtype = ftsst.dtype)
+  toutput.encodevar(ftsst, 'newres1')
 
-  foroutput.close()
+  toutput.close()
 
 #----------------------------------------------------------------------
 nx = 1440
@@ -64,7 +60,7 @@ ny =  720
 loy = 365.2422 # tropical year
 freq_base = 2.*pi/loy
 
-dset = nc.Dataset("first_pass.nc", "r")
+dset = nc.Dataset("epoch1991.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
@@ -100,7 +96,7 @@ tag   = datetime.datetime(1981,9,1)
 
 
 #-------------------------------------------------
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 
 # Initialize files for accumulations
 sst = np.zeros((ny,nx)) # temporary file for reading in data
@@ -155,33 +151,33 @@ while (tag <= end):
   tclim = climo(intercept, slope, ampl, phas, freq, epoch, tag)
   tsst -= tclim
 # write out residual, tsst
-  writeout(tsst, mask, nx, ny, lats, lons, tag)
-  
+  writeout(tsst, nx, ny, lats, lons)
+
   sumx1 += tsst
   sumx2 += (tsst*tsst)
   sumx3 += (tsst*tsst*tsst)
   sumx4 += (tsst*tsst)*(tsst*tsst)
 
 # Accumulate Nino3.4 orthogonalization info
-  tnino34 = tsst[nino34].mean() 
+  tnino34 = tsst[nino34].mean()
   sumxn += tnino34*tsst
   sumn2 += tnino34*tnino34
   sumn  += tnino34
 
   del tclim
   count += 1   # number of days' data
-  tag   += dt 
+  tag   += dt
 #------------------------------------------------
 days = count
 
 indices = mask.nonzero()
-applymask(mask, sumx1, indices)
-applymask(mask, sumx2, indices)
-applymask(mask, sumx3, indices)
-applymask(mask, sumx4, indices)
-applymask(mask, sumxn, indices)
-applymask(mask, sumx2, indices)
-applymask(mask, sumn,  indices)
+applymask(sumx1, indices)
+applymask(sumx2, indices)
+applymask(sumx3, indices)
+applymask(sumx4, indices)
+applymask(sumxn, indices)
+applymask(sumx2, indices)
+applymask(sumn,  indices)
 # orthog1
 # orthog2
 
@@ -197,8 +193,6 @@ print("mean", mean.max(), mean.min() )
 
 
 # ---- .nc encoding --------------------------------------------------
-import ncoutput
-
 name = "newres1_30.nc"
 
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
@@ -233,7 +227,7 @@ print(tmpx.min(), tmpx.max(), tmpx.mean() )
 slope     = (days*sumxn - sumx1*sumn) / tmpn
 print('slope',slope.max(), slope.min(), slope.mean(), flush=True )
 
-intercept = (sumx1/days - slope*sumn/days)
+intercept = sumx1/days - slope*sumn/days
 print('intercept',intercept.max(), intercept.min(), intercept.mean(), flush=True )
 
 correl    = (days*sumxn - sumx1*sumn) / np.sqrt(tmpn) / np.sqrt(tmpx)

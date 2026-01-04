@@ -1,56 +1,37 @@
-from math import *
-import os
+'''
+First pass of traditional climatology
+'''
+
+#from math import *
 import datetime
 import copy
 
 import numpy as np
-import numpy.ma as ma
+from numpy import ma
 import netCDF4
 
 from functions import *
 import ncoutput
 
 #------------------------------------------------
-def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 30):
-  #RG: write out mean, max, min to save file
-  mask =  ma.masked_array(sumx1 < -900.*n)
+def writeout(fsumx1, flats, flons, f2base, ftag, fn = 30):
+  '''
+  #RG: write out mean to save file
+  '''
+  mask =  ma.masked_array(fsumx1 < -900.*fn)
   indices = mask.nonzero()
-  
-  #applymask(mask, sumx1, indices)
-  #applymask(mask, sumx2, indices)
-  #applymask(mask, sumx3, indices)
-  #applymask(mask, sumx4, indices)
-  
-  #print("sumx1", sumx1.max(), sumx1.min() )
-  #print("sumx2", sumx2.max(), sumx2.min() )
-  #print("sumx3", sumx3.max(), sumx3.min() )
-  #print("sumx4", sumx4.max(), sumx4.min() )
-  #print("tmax", tmax.max() , tmax.min() )
-  #print("tmin", tmin.max() , tmin.min() )
 
-  name = base+"traditional_"+tag.strftime("%Y%m%d")+".nc"
+  name = f2base+"traditional_"+ftag.strftime("%Y%m%d")+".nc"
 
-  foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
+  foroutput = ncoutput.ncoutput(nx, ny, flats, flons, name)
   foroutput.ncoutput(name)
-  #foroutput.addvar('sumx1', dtype = sumx1.dtype)
-  foroutput.addvar('mean', dtype = sumx1.dtype)
-  #foroutput.addvar('sumx2', dtype = sumx2.dtype)
-  #foroutput.addvar('sumx3', dtype = sumx3.dtype)
-  #foroutput.addvar('sumx4', dtype = sumx4.dtype)
-  #foroutput.addvar('tmax', dtype = tmax.dtype)
-  #foroutput.addvar('tmin', dtype = tmin.dtype)
-  
-  mean = sumx1/n
-  applymask(mask, mean, indices)
-  
-  #foroutput.encodevar(sumx1, 'sumx1')
+  foroutput.addvar('mean', dtype = fsumx1.dtype)
+
+  mean = fsumx1/fn
+  applymask(mean, indices)
+
   foroutput.encodevar(mean,  'mean')
-  #foroutput.encodevar(sumx2, 'sumx2')
-  #foroutput.encodevar(sumx3, 'sumx3')
-  #foroutput.encodevar(sumx4, 'sumx4')
-  #foroutput.encodevar(tmin,   'tmin')
-  #foroutput.encodevar(tmax,   'tmax')
-  
+
   tmask = np.zeros((ny,nx))
   for k in range(0, len(indices[0]) ):
       i = indices[1][k]
@@ -58,7 +39,7 @@ def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 30):
       tmask[j,i] = 1.0
   foroutput.addvar('mask', dtype = tmask.dtype)
   foroutput.encodevar(tmask, 'mask')
-  
+
   foroutput.close()
 #------------------ End writeout ---------- --------------------------
 
@@ -67,7 +48,7 @@ def writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, base, tag, n = 30):
 #  Compute a traditional style climatology, day by day for 30 years
 #-------------------------------------------------
 # location of data files
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 #file name format: "oisst-avhrr-v02r01.YYYYMMDD.nc"
 
 # Defining the quarter degree grid
@@ -93,7 +74,7 @@ while (tag <= end ):
   # Initialize files for accumulations
   sst = np.zeros((ny,nx)) # temporary file for reading in data
   tmp = np.zeros((ny,nx))
-  
+
   # for accumulating moments:
   sumx1 = np.zeros((ny,nx))
   sumx2 = np.zeros((ny,nx))
@@ -132,10 +113,10 @@ while (tag <= end ):
 # Find extrema:
     tmax = np.fmax(tmax, sst)
     tmin = np.fmin(tmin, sst)
-    
-  writeout(sumx1, sumx2, sumx3, sumx4, tmax, tmin, fbase, tag, n = 30)
+
+  writeout(sumx1, lats, lons, fbase, tag, fn = 30)
 
   count += 1   # number of days' data
   tag   += dt
-  
+
 #-------------------------------------------------

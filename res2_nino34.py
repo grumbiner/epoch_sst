@@ -1,38 +1,19 @@
-import copy
-import datetime
-from math import *
-
-import numpy as np
-import numpy.ma as ma
-
-import netCDF4 as nc
-
 """
 #Offline:
 #  Compute + map:
 #    %variance explained by mean, trend, harmonics, Nino3.4
 #    Magnitude residual variance
-
 """
- 
-#----------------------------------------------------------------------
+
+import copy
+import datetime
+from math import pi
+
+import numpy as np
+import netCDF4 as nc
 
 from functions import *
 import ncoutput
-
-def writeout(tsst, mask, nx, ny, lats, lons, tag):
-  #indices = mask.nonzero()
-  #applymask(mask, tsst, indices)
-  print("tsst ",tag, tsst.max(), tsst.min(), tsst.mean() )
-
-  name = "v2.1.nc/ninores1_"+tag.strftime("%Y%m%d")+".nc"
-
-  foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
-  foroutput.ncoutput(name)
-  foroutput.addvar('ninores1', dtype = tsst.dtype)
-  foroutput.encodevar(tsst, 'ninores1')
-
-  foroutput.close()
 
 #----------------------------------------------------------------------
 nx = 1440
@@ -84,7 +65,7 @@ print('nino_slope',nino_slope.max(), nino_slope.min(), nino_slope.mean(), flush=
 epoch = datetime.datetime(1981,9,1)
 
 #-------------------------------------------------
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 
 # Initialize files for accumulations
 sst = np.zeros((ny,nx)) # temporary file for reading in data
@@ -126,14 +107,14 @@ while (tag <= end):
   tsst -= tclim
 
 # Nino3.4 orthogonalization info
-  tnino34 = tsst[nino34].mean() 
+  tnino34 = tsst[nino34].mean()
   tnino34 *= nino_slope
   tsst -= tnino34
 
   sumx1 += tsst
 
   count += 1   # number of days' data
-  tag   += dt 
+  tag   += dt
 #------------------------------------------------
 days = count
 
@@ -146,11 +127,5 @@ foroutput.encodevar(sumx1,  'mean')
 foroutput.encodescalar(count, 'days')
 
 foroutput.close()
-
-
-# ---- .nc encoding --------------------------------------------------
-import ncoutput
-
-
 
 #------------------ End of second pass --------------------------

@@ -1,15 +1,17 @@
-from math import *
+from math import pi, cos, sin, sqrt
 import os
+import sys
 import datetime
 import copy
 
 import numpy as np
-import numpy.ma as ma
+from numpy import ma
 import netCDF4
 
-from functions import *
 #-------------------------------------------------
-from harmonic_grid import * 
+from functions import *
+import ncoutput
+from harmonic_grid import *
 
 # Define harmonic frequencies
 loy = 365.2422 #days, tropical year
@@ -25,26 +27,9 @@ omega[3] = 2.*pi/loy*4
 omega[4] = 2.*pi/loy*5
 omega[5] = 2.*pi/loy*6
 
-#omega[3] = 2.*pi/(loy*(30/2.))
-#omega[4] = 2.*pi/(loy*(30/3.))
-#omega[5] = 2.*pi/(loy*(30/4.))
-#omega[6] = 2.*pi/(loy*(30/5.))
-#omega[7] = 2.*pi/(loy*(30/6.))
-#omega[8] = 2.*pi/(loy*(30/7.))
-#omega[9] = 2.*pi/(loy*(30/8.))
-#omega[10] = 2.*pi/(loy*(30/9.))
-#omega[11] = 2.*pi/(loy*(30/10.))
-
-#omega[3] = 2.*pi/loy*4
-#omega[4] = 2.*pi/loy*5
-#omega[5] = 2.*pi/loy*6
-#omega[3] = 2.*pi/lom   + omega[0]
-#omega[4] = 2.*pi/lom*2 + omega[1]
-#omega[5] = 2.*pi/lom*3 + omega[2]
-
 #-------------------------------------------------
 # location of data files
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 #file name format: "oisst-avhrr-v02r01.YYYYMMDD.nc"
 
 # Defining the quarter degree grid
@@ -59,7 +44,7 @@ start = datetime.datetime(1991,1,1)
 #debug: end = datetime.datetime(1981,9,30)
 #debug: end = datetime.datetime(1982,8,31)
 #debug: end = datetime.datetime(1990,12,31)
-#ops: 
+#ops:
 #end = datetime.datetime(2011,8,31)
 end = datetime.datetime(2020,12,31)
 #end = datetime.datetime(2023,12,31)
@@ -82,7 +67,7 @@ while (tag <= end and errcount < 90 ):
 #debug: print("error count in running over target period:",errcount)
 if (errcount != 0):
     print("find the missing data files!")
-    exit(1)
+    sys.exit(1)
 
 #-------------------------------------------------
 # Initialize files for accumulations
@@ -151,13 +136,13 @@ while (tag <= end ):
 # Accumulate harmonics:
     tmp = copy.deepcopy(sst)
     for j in range(0, nfreq):
-      hsum1[:,:,j] += tmp * cos(omega[j]*days) 
-      hsum2[:,:,j] += tmp * sin(omega[j]*days) 
+      hsum1[:,:,j] += tmp * cos(omega[j]*days)
+      hsum2[:,:,j] += tmp * sin(omega[j]*days)
 
 # Find extrema:
     tmax = np.fmax(tmax, sst)
     tmin = np.fmin(tmin, sst)
-    
+
     days  += 1   # days since epoch
     count += 1   # number of days' data
     tag   += dt
@@ -174,8 +159,8 @@ harmonic_coeffs(coeff, omega, count, nfreq, n0 = n0) # rg: probably need n0 here
 
 mean = sumx1/count
 for j in range(0, nfreq):
-  harmsums[:,:,2*j  ]  = hsum1[:,:,j ] 
-  harmsums[:,:,2*j+1]  = hsum2[:,:,j ] 
+  harmsums[:,:,2*j  ]  = hsum1[:,:,j ]
+  harmsums[:,:,2*j+1]  = hsum2[:,:,j ]
 
 # solve for harmonics-only
 harmonic_solve(coeff, harmsums, alpha, beta, nfreq)
@@ -188,15 +173,15 @@ harmonic_solve(coeff, harmsums, alpha, beta, nfreq)
 mask =  ma.masked_array(sumx1 < -900.*days)
 indices = mask.nonzero()
 
-applymask(mask, sumx1, indices)
-applymask(mask, sumx2, indices)
-applymask(mask, sumx3, indices)
-applymask(mask, sumx4, indices)
-applymask(mask, sumxt, indices)
-applymask(mask, sumt, indices)
-applymask(mask, sumt2, indices)
-applymask(mask, alpha, indices)
-applymask(mask, beta , indices)
+applymask(sumx1, indices)
+applymask(sumx2, indices)
+applymask(sumx3, indices)
+applymask(sumx4, indices)
+applymask(sumxt, indices)
+applymask(sumt, indices)
+applymask(sumt2, indices)
+applymask(alpha, indices)
+applymask(beta , indices)
 
 print("sumx1", sumx1.max(), sumx1.min() )
 print("sumx2", sumx2.max(), sumx2.min() )
@@ -219,12 +204,12 @@ for j in range(0, nfreq):
   #debug: print(j, "phase", phase[:,:,j].max() )
   for k in range(0,ny):
     for l in range(0,nx):
-      if (phase[k,l,j] < -180.): phase[k,l,j] += 360.
-      if (phase[k,l,j] <  180.): phase[k,l,j] -= 360.
-  
-#-------------------------------------------------
-import ncoutput
+      if (phase[k,l,j] < -180.):
+        phase[k,l,j] += 360.
+      if (phase[k,l,j] <  180.):
+        phase[k,l,j] -= 360.
 
+#-------------------------------------------------
 name = "epoch1991.nc"
 
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
@@ -257,11 +242,11 @@ foroutput.addvar('cpy6_amp', dtype = ampls.dtype)
 foroutput.addvar('cpy6_pha', dtype = phase.dtype)
 
 mean = sumx1/count
-applymask(mask, mean, indices)
-applymask(mask, sumx1, indices)
-applymask(mask, sumxt, indices)
-applymask(mask, sumt, indices)
-applymask(mask, sumt2, indices)
+applymask(mean, indices)
+applymask(sumx1, indices)
+applymask(sumxt, indices)
+applymask(sumt, indices)
+applymask(sumt2, indices)
 
 tmpt = days*sumt2 - sumt*sumt
 tmpx = days*sumx2 - sumx1*sumx1
@@ -272,26 +257,26 @@ tlim = tmpt.max()
 xlim = tmpx.max()
 for j in range (0, ny):
   for i in range (0, nx):
-    if (tmpt[j,i] == 0): 
+    if (tmpt[j,i] == 0):
       tmpt[j,i] = tlim
       tcount += 1
-    if (tmpx[j,i] == 0): 
+    if (tmpx[j,i] == 0):
       tmpx[j,i] = xlim
       xcount += 1
-print("count of zero tmpt",tcount, "tmpx",xcount) 
+print("count of zero tmpt",tcount, "tmpx",xcount)
 print(tmpt.min(), tmpt.max(), tmpt.mean() )
 
 slope = (days*sumxt - sumx1*sumt) / tmpt #RG: should be from trend solver
-applymask(mask, slope, indices)
+applymask(slope, indices)
 
 intercept = (sumx1/days - slope*sumt/days) #RG: ditto
-applymask(mask, intercept, indices)
+applymask(intercept, indices)
 
 correl = (days*sumxt - sumx1*sumt ) / (np.sqrt(tmpt) * np.sqrt(tmpx))
-applymask(mask, correl, indices)
+applymask(correl, indices)
 
 tstat = correl*sqrt(days) / (1. - correl*correl)
-applymask(mask, tstat, indices)
+applymask(tstat, indices)
 
 foroutput.encodevar(sumx1, 'sumx1')
 foroutput.encodevar(mean,  'mean')

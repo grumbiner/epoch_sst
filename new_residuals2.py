@@ -1,12 +1,3 @@
-import copy
-import datetime
-from math import *
-
-import numpy as np
-import numpy.ma as ma
-
-import netCDF4 as nc
-
 """
 #Read in first pass -- 
 #  intercept, trend, harmonics 1-3 and their phase
@@ -38,23 +29,30 @@ import netCDF4 as nc
 #    Magnitude residual variance
 
 """
- 
-#----------------------------------------------------------------------
+
+import copy
+import datetime
+from math import pi
+
+import numpy as np
+
+import netCDF4 as nc
 
 from functions import *
 import ncoutput
 
-def writeout(tsst, mask, nx, ny, lats, lons, tag):
-  #indices = mask.nonzero()
-  #applymask(mask, tsst, indices)
-  print("tsst ",tag, tsst.max(), tsst.min(), tsst.mean() )
+#----------------------------------------------------------------------
 
-  name = "v2.1.nc/newres1_"+tag.strftime("%Y%m%d")+".nc"
+def writeout(ftsst, fnx, fny, flats, flons, ftag):
+  ''' writing out the sst -- writeout(sst, nx, ny, lats, lons, tag) '''
+  print("tsst ",tag, ftsst.max(), ftsst.min(), ftsst.mean() )
 
-  foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
-  foroutput.ncoutput(name)
-  foroutput.addvar('newres1', dtype = tsst.dtype)
-  foroutput.encodevar(tsst, 'newres1')
+  f2name = "v2.1.nc/newres1_"+ftag.strftime("%Y%m%d")+".nc"
+
+  foroutput = ncoutput.ncoutput(fnx, fny, flats, flons, f2name)
+  foroutput.ncoutput(f2name)
+  foroutput.addvar('newres1', dtype = ftsst.dtype)
+  foroutput.encodevar(ftsst, 'newres1')
 
   foroutput.close()
 
@@ -100,7 +98,7 @@ tag   = datetime.datetime(1981,9,1)
 
 
 #-------------------------------------------------
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 
 # Initialize files for accumulations
 sst = np.zeros((ny,nx)) # temporary file for reading in data
@@ -153,28 +151,28 @@ while (tag <= end):
   tclim = climo(intercept, slope, ampl, phas, freq, epoch, tag)
   tsst -= tclim
 # write out residual, tsst
-  writeout(tsst, mask, nx, ny, lats, lons, tag)
-  
+  writeout(tsst, nx, ny, lats, lons, tag)
+
   sumx1 += tsst
   sumx2 += (tsst*tsst)
   sumx3 += (tsst*tsst*tsst)
   sumx4 += (tsst*tsst)*(tsst*tsst)
 
 # Accumulate Nino3.4 orthogonalization info
-  tnino34 = tsst[nino34].mean() 
+  tnino34 = tsst[nino34].mean()
   sumxn += tnino34*tsst
   sumn2 += tnino34*tnino34
   sumn  += tnino34
 
   del tclim
   count += 1   # number of days' data
-  tag   += dt 
+  tag   += dt
 #------------------------------------------------
 indices = mask.nonzero()
-applymask(mask, sumx1, indices)
-applymask(mask, sumx2, indices)
-applymask(mask, sumx3, indices)
-applymask(mask, sumx4, indices)
+applymask(sumx1, indices)
+applymask(sumx2, indices)
+applymask(sumx3, indices)
+applymask(sumx4, indices)
 # orthog1
 # orthog2
 
@@ -188,8 +186,6 @@ print("mean", mean.max(), mean.min() )
 
 
 # ---- .nc encoding --------------------------------------------------
-import ncoutput
-
 name = "newres1_30.nc"
 
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)

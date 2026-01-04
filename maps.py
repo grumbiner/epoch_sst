@@ -1,6 +1,6 @@
-from math import *
+#from math import *
 import numpy as np
-import numpy.ma as ma
+from numpy import ma
 
 import netCDF4 as nc
 import cartopy.crs as ccrs
@@ -19,7 +19,7 @@ matplotlib.use('Agg')
 nx = 1440
 ny =  720
 
-dset = nc.Dataset("first_pass.nc", "r")
+dset = nc.Dataset("epoch1991.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 fmask = dset.variables['mask'][:,:]
@@ -277,7 +277,7 @@ cb.set_label(cbarlabel, fontsize=12)
 plt.savefig("harm_var.png")
 plt.close()
 
-# -- plot 1st harmonic 
+# -- plot 1st harmonic
 fig = plt.figure(figsize=(12, 9))
 ax  = fig.add_subplot(1, 1, 1, projection = proj)
 ax.coastlines(resolution='10m')

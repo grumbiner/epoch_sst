@@ -1,7 +1,12 @@
+'''
+# collection bin for miscellaneous functions
+'''
 import copy
-from math import *
+import datetime
+from math import floor, ceil
+
 import numpy as np
-import numpy.ma as ma
+import netCDF4 as nc
 
 import cartopy.crs as ccrs
 import matplotlib
@@ -9,10 +14,10 @@ import matplotlib.pyplot as plt
 
 matplotlib.use('Agg')
 
-# collection bin for miscellaneous functions
-
 #=================================================================
-def show(bins, lons, lats, x, title, fbase, cmap = matplotlib.colormaps.get_cmap('bwr'), proj = ccrs.PlateCarree() ):
+def show(bins, lons, lats, x, title, fbase, cmap = matplotlib.colormaps.get_cmap('bwr'), \
+         proj = ccrs.PlateCarree() ):
+  ''' show(bins, lons, lats, x, title, fbase, cmap = , proj = '''
   bounds = np.array(bins)
   norm = matplotlib.colors.BoundaryNorm(boundaries = bounds, ncolors = 256)
 
@@ -37,25 +42,32 @@ def show(bins, lons, lats, x, title, fbase, cmap = matplotlib.colormaps.get_cmap
   print(title)
   print(hist, hist.sum() )
   print(binedges,"\n\n")
-  #debug: print(binedges)
+  #debug: print(binedges, flush=True)
 
-
-#------------------------------------------------
 #=================================================================
-def applymask(mask, grid, indices):
+def applymask(grid, indices):
+  ''' applymask(grid, indices) -- indices being array indices from masked array '''
   for k in range(0, len(indices[0])):
     i = indices[1][k]
     j = indices[0][k]
-    grid[j,i] = 0.   
+    grid[j,i] = 0.
 
 #=================================================================
 def find_bins(x, nbin):
+  ''' find_bins(x, nbin) returns an np.linspace(vmin, vmax, nbin) '''
   vmin = floor(x.min())
   vmax = ceil(x.max())
   return np.linspace(vmin, vmax, nbin)
 
 #=================================================================
 def climo(intercept, slope, ampl, phase, freq, epoch, tag):
+  ''' climo(intercept, slope, ampl, phase, freq, epoch, tag) 
+      intercept, slope = linear trend
+      ampl, phase = amplitude and phase of the harmonics
+      freq        = frequency of the harmonics
+      epoch = reference date of the climatology
+      tag   = date climatology is desired for
+  '''
   delta = (tag - epoch).days
   sst = copy.deepcopy(intercept)
   sst += slope*delta
@@ -67,8 +79,12 @@ def climo(intercept, slope, ampl, phase, freq, epoch, tag):
 #----------------------------------------------------------------------
 
 def old_climo(epoch, tag):
-  fbase = "/Volumes/Data/qdoi/v2.1.nc/"
-#RG: This is hard wiring somewhat to epoch 1 sep 1981
+  ''' old_climo(epoch, tag) -- extract the climatology for the given (tag) 
+            date from the epoch date reference 
+  '''
+  fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
+
+  #RG: This is hard wiring somewhat to epoch 1 Sep 1981
   if (tag.month == 2 and tag.day == 29):
     ref = datetime.datetime(epoch.year, tag.month, 28)
   else:
@@ -83,6 +99,3 @@ def old_climo(epoch, tag):
   tmpnc.close()
 
   return sst
-
-
-

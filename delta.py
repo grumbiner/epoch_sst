@@ -1,7 +1,15 @@
+'''
+Compute differences between two particular new-style climatologies
+'''
+
 import sys
-from math import *
+from math import pi
 import numpy as np
 import netCDF4 as nc
+
+import cartopy.crs as ccrs
+import matplotlib
+import matplotlib.pyplot as plt
 
 from functions import *
 #=================================================================
@@ -18,15 +26,17 @@ field = sys.argv[1]
 x = first.variables[field][:,:]
 y = second.variables[field][:,:]
 
-delta = (y-x)
+delta = y-x
 print(delta.max(), delta.min(), delta.mean() )
 # For phase differences
 print("nx, ny ",nx, ny)
 delta *= 180./pi
 for k in range(0,ny):
   for l in range(0,nx):
-    if (delta[k,l] < -180.): delta[k,l] += 360.
-    if (delta[k,l] >  180.): delta[k,l] -= 360.
+    if (delta[k,l] < -180.):
+      delta[k,l] += 360.
+    if (delta[k,l] >  180.):
+      delta[k,l] -= 360.
 
 #dmin = -180.
 #dmax =  180.
@@ -48,9 +58,6 @@ hist, binedges =  np.histogram(delta, bins = bins)
 print(hist, hist.sum() )
 print(binedges,"\n\n")
 
-import cartopy.crs as ccrs
-import matplotlib
-import matplotlib.pyplot as plt
 
 matplotlib.use('Agg')
 #=================================================================

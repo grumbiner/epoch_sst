@@ -1,39 +1,34 @@
+"""
+Doesn't really fit its name. Computes a second pass estimating moments 
+  (sumx2 etc.) using deviations from climatology, hopefully more accurately 
+  than first_pass working with full temperatures.
+"""
+
 import copy
 import datetime
-from math import *
 
 import numpy as np
-import numpy.ma as ma
 
 import netCDF4 as nc
 
-"""
-Compute a traditional 30 year climatology by day
-
-"""
- 
 #----------------------------------------------------------------------
 
 from functions import *
+import ncoutput
 
 #----------------------------------------------------------------------
 nx = 1440
 ny =  720
 
-dset = nc.Dataset("first_pass.nc", "r")
+dset = nc.Dataset("epoch1991.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
+fmask  = dset.variables['mask'][:,:]
 
-fmask     = dset.variables['mask'][:,:]
-
-epoch = datetime.datetime(1981,9,1)
-#tag   = datetime.datetime(2021,9,1)
-tag   = datetime.datetime(1981,9,1)
-
-
+epoch = datetime.datetime(1991,1,1)
 
 #-------------------------------------------------
-fbase = "/Volumes/Data/qdoi/v2.1.nc/"
+fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 
 # Initialize files for accumulations
 sst = np.zeros((ny,nx)) # temporary file for reading in data
@@ -45,9 +40,9 @@ sumx2 = np.zeros((ny,nx))
 sumx3 = np.zeros((ny,nx))
 sumx4 = np.zeros((ny,nx))
 
-start = datetime.datetime(2011,9,1)
+start = datetime.datetime(1991,1,1)
 #end   = datetime.datetime(2011,12,25)
-end   = datetime.datetime(2021,8,31)
+end   = datetime.datetime(2020,12,31)
 
 dt = datetime.timedelta(1)
 tag = start
@@ -69,21 +64,21 @@ while (tag <= end):
   tsst = copy.deepcopy(sst)
   tclim = old_climo(epoch, tag)
   tsst -= tclim
-  
+
   sumx1 += tsst
   sumx2 += (tsst*tsst)
   sumx3 += (tsst*tsst*tsst)
   sumx4 += (tsst*tsst)*(tsst*tsst)
 
-  del tclim
+  del tclim, tsst
   count += 1   # number of days' data
-  tag   += dt 
+  tag   += dt
 #------------------------------------------------
 indices = fmask.nonzero()
-applymask(fmask, sumx1, indices)
-applymask(fmask, sumx2, indices)
-applymask(fmask, sumx3, indices)
-applymask(fmask, sumx4, indices)
+applymask(sumx1, indices)
+applymask(sumx2, indices)
+applymask(sumx3, indices)
+applymask(sumx4, indices)
 # orthog1
 # orthog2
 
@@ -96,7 +91,6 @@ print("mean", mean.max(), mean.min() )
 
 
 # ---- .nc encoding --------------------------------------------------
-import ncoutput
 
 name = "second_pass.nc"
 

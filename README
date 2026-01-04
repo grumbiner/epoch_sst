@@ -15,16 +15,14 @@ new_first.py -- compute mean, slope, intercept, first 6 harmonics of annual cycl
 delta.py     -- look at differences between two 'first pass' files (from new_first)
 maps.py      -- compute and plot mean, sd, skew, kurtosis; slope, intercept; harmonic amplitudes
 
-new_residuals1.py -- compute the stats for G-S orthogonalization w.r.t. Nino 3.4 temperatures, write out as newres1_30.nc
-map_nino.py       -- compute and plot as for maps2.py FIX: reconcile/merge/...
-maps2.py          -- FIX compute and plot maps for correlation, linear regession on to Nino 3.4
+new_residuals2.py -- use newres1_30.nc to orthogonalize w.r.t. Nino 3.4, write out residue a) for 1981/9/1+30 years, for 2011/9/1+10 years RG
+map2_nino.py       -- compute and plot as for maps2.py FIX: reconcile/merge/...
 
 FIX: compute residuals for 2011/9/1+10 years from first_pass.nc
-new_residuals2.py -- use newres1_30.nc to orthogonalize w.r.t. Nino 3.4, write out residue a) for 1981/9/1+30 years, for 2011/9/1+10 years RG
 
 
 old_first.py -- compute traditional climatology 30 years from 9/1/1981++
 old_residuals.py -- compute residuals for next decade
 oldres_maps.py   -- plot residual stats
 
-trad_residuals1.py -- doesn't really fit its name
+trad_residuals1.py -- doesn't really fit its name. Computes a second pass estimating moments (sumx2 etc.) using deviations from climatology, hopefully more accurately than first_pass working with full temperatures.

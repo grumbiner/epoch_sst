@@ -1,6 +1,7 @@
-from math import *
+''' legacy -- plot mean from a.nc and print its histogram '''
+
+#from math import *
 import numpy as np
-import numpy.ma as ma
 
 import netCDF4 as nc
 import cartopy.crs as ccrs
@@ -12,9 +13,6 @@ from functions import *
 matplotlib.use('Agg')
 
 #=================================================================
-
-# given the mean values of sumx1, sumx2, sumx3, sumx4, compute
-#    mean, sd, skew, kurtosis
 
 nx = 1440
 ny =  720
@@ -32,10 +30,7 @@ days = getattr(dset, 'days')
 zeros = np.zeros((ny,nx))
 proj  = ccrs.PlateCarree()
 
-
 #----------------------------------------------------------------------
-#bin
-
 #RG: binning of residuals
 bins = np.linspace(-6.,6,25)
 
