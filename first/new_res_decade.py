@@ -121,7 +121,7 @@ tag = resstart
 count = 0
 
 while (tag <= ressend ):
-  print("tag =",tag, flush=True)
+  #debug: print("tag =",tag, flush=True)
   # Initialize files for accumulations
   sst = np.zeros((ny,nx)) # temporary file for reading in data
   mean = np.zeros((ny,nx))
@@ -135,7 +135,9 @@ while (tag <= ressend ):
   sst   = tmpnc.variables['sst'][0,0,:,:]
   tmpnc.close()
 
+  print(tag.strftime("%Y%m%d"),sst.max(), sst.min(), tclim.max(), tclim.min(), ' ', end="")
   sst -= tclim
+  print(sst.max(), sst.min() )
 
 # Accumulate moments:
   tmp = copy.deepcopy(sst)

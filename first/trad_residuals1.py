@@ -15,13 +15,29 @@ from functions import *
 import ncoutput
 
 #----------------------------------------------------------------------
+
+def writeout(ftsst, fnx, fny, flats, flons, ftag):
+  ''' writing out the sst -- writeout(sst, nx, ny, lats, lons, tag) '''
+  print("tsst ",tag.strftime("%Y%m%d"), ftsst.max(), ftsst.min(), ftsst.mean() )
+
+  f2name = "v2.1.nc/oldres1_"+ftag.strftime("%Y%m%d")+".nc"
+
+  foroutput = ncoutput.ncoutput(fnx, fny, flats, flons, f2name)
+  foroutput.ncoutput(f2name)
+  foroutput.addvar('oldres1', dtype = ftsst.dtype)
+  foroutput.encodevar(ftsst, 'oldres1')
+
+  foroutput.close()
+
+
+#----------------------------------------------------------------------
 nx = 1440
 ny =  720
 dt = datetime.timedelta(1)
 
 epoch = datetime.datetime(1981,9,1)
 #end   = datetime.datetime(2020,12,31)
-end   = datetime.datetime(2010,8,31)
+end   = datetime.datetime(2011,8,31)
 
 dset = nc.Dataset(f"epoch{epoch.year:4d}.nc", "r")
 lons = dset.variables['lon'][:]
@@ -64,6 +80,7 @@ while (tag <= end):
   sumx2 += (tsst*tsst)
   sumx3 += (tsst*tsst*tsst)
   sumx4 += (tsst*tsst)*(tsst*tsst)
+  writeout(tsst, nx, ny, lats, lons, tag)
 
   del tclim, tsst
   count += 1   # number of days' data

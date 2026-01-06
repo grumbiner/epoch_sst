@@ -45,7 +45,7 @@ import ncoutput
 
 def writeout(ftsst, fnx, fny, flats, flons, ftag):
   ''' writing out the sst -- writeout(sst, nx, ny, lats, lons, tag) '''
-  print("tsst ",tag, ftsst.max(), ftsst.min(), ftsst.mean() )
+  print("tsst ",tag.strftime("%Y%m%d"), ftsst.max(), ftsst.min(), ftsst.mean() )
 
   f2name = "v2.1.nc/newres1_"+ftag.strftime("%Y%m%d")+".nc"
 
@@ -61,8 +61,10 @@ nx = 1440
 ny =  720
 loy = 365.2422 # tropical year
 freq_base = 2.*pi/loy
+dt = datetime.timedelta(1)
 
-dset = nc.Dataset("first_pass.nc", "r")
+epoch = datetime.datetime(1981,9,1)
+dset = nc.Dataset(f"epoch{epoch.year:4d}.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
@@ -87,15 +89,7 @@ freq[2] = freq_base*3
 phas *= pi/180.
 
 print(ampl[0].max(), phas[0].max() )
-
-epoch = datetime.datetime(1981,9,1)
-#tag   = datetime.datetime(2021,9,1)
-tag   = datetime.datetime(1981,9,1)
-
-#debug: sst = climo(intercept, slope, ampl, phas, freq, epoch, tag)
-#debug: print(sst.max(), sst.min(), sst.mean() )
-#debug: print(sst[sst < -1.8])
-
+dset.close()
 
 #-------------------------------------------------
 fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
@@ -117,14 +111,13 @@ sumn  = 0.0
 sumn2 = 0.0
 
 # Original span:
-start = datetime.datetime(1981,9,1)
+start = epoch
 #debug: end   = datetime.datetime(1981,9,18)
 end   = datetime.datetime(2011,8,31)
 # Next Decade
 #start = datetime.datetime(2011,9,1)
 #end   = datetime.datetime(2021,8,31)
 
-dt = datetime.timedelta(1)
 tag = start
 count = 0
 while (tag <= end):
@@ -164,7 +157,7 @@ while (tag <= end):
   sumn2 += tnino34*tnino34
   sumn  += tnino34
 
-  del tclim
+  del tsst, tclim
   count += 1   # number of days' data
   tag   += dt
 #------------------------------------------------

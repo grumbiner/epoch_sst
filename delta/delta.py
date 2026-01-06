@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 from functions import *
 #=================================================================
 
-first  = nc.Dataset("v2.1.nc/first_pass.nc","r")
-second = nc.Dataset("orig.first_pass.nc", "r")
+first  = nc.Dataset("epoch1981.nc","r")
+second = nc.Dataset("second_pass.nc", "r")
 lons = first.variables['lon'][:]
 lats = first.variables['lat'][:]
 nx = len(lons)
