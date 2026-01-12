@@ -90,7 +90,7 @@ def old_climo(epoch, tag):
     ref = datetime.datetime(epoch.year, tag.month, tag.day)
 
   if (ref < epoch):
-    ref = datetime.datetime(epoch.year+1, ref.month, ref.day)
+    ref = datetime.datetime(epoch.year+1, epoch.month, epoch.day)
   fname = "traditional_" + ref.strftime("%Y%m%d") + ".nc"
 
   tmpnc = nc.Dataset(fbase + fname)

@@ -1,3 +1,7 @@
+'''
+Harmonic climatology -- 
+Robert Grumbine
+'''
 from math import pi, cos, sin, sqrt
 import os
 import sys
@@ -9,9 +13,9 @@ from numpy import ma
 import netCDF4
 
 #-------------------------------------------------
-from functions import *
+from functions import applymask
 import ncoutput
-from harmonic_grid import *
+from harmonic_grid import harmonic_coeffs, harmonic_solve
 
 # Define harmonic frequencies
 loy = 365.2422 #days, tropical year
@@ -49,7 +53,7 @@ tag = epoch
 errcount = 0
 while (tag <= end and errcount < 90 ):
     fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
-    if (not os.path.exists(fbase+fname)):
+    if not os.path.exists(fbase+fname):
         print("no file for ",fbase+fname)
         errcount += 1
     tag += dt
@@ -257,7 +261,7 @@ print(tmpt.min(), tmpt.max(), tmpt.mean() )
 slope = (days*sumxt - sumx1*sumt) / tmpt #RG: should be from trend solver
 applymask(slope, indices)
 
-intercept = (sumx1/days - slope*sumt/days) #RG: ditto
+intercept = sumx1/days - slope*sumt/days #RG: ditto
 applymask(intercept, indices)
 
 correl = (days*sumxt - sumx1*sumt ) / (np.sqrt(tmpt) * np.sqrt(tmpx))

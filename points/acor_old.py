@@ -40,11 +40,11 @@ while (tag <= end ):
     print("tag =",tag, flush=True)
 
 # Get the day's data:
-  fname = "oldres1_" + tag.strftime("%Y%m%d") + ".nc"
+  fname = "res_traditional_" + tag.strftime("%Y%m%d") + ".nc"
 
   if not (tag.month == 2 and tag.day == 29):
     tmpnc = netCDF4.Dataset(fbase + fname)
-    sst = tmpnc.variables['oldres1'][:,:]
+    sst = tmpnc.variables['fanomaly'][:,:]
     tmpnc.close()
   # sst persists for leap days
 

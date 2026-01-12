@@ -1,3 +1,6 @@
+'''
+plot maps of new climatology's statistics
+'''
 import datetime
 
 import numpy as np
@@ -8,7 +11,7 @@ import cartopy.crs as ccrs
 import matplotlib
 import matplotlib.pyplot as plt
 
-from functions import *
+from functions import show, find_bins
 
 matplotlib.use('Agg')
 

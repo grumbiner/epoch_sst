@@ -10,7 +10,7 @@ import numpy as np
 from numpy import ma
 import netCDF4
 
-from functions import *
+from functions import applymask
 import ncoutput
 
 #------------------------------------------------

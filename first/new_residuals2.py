@@ -38,7 +38,7 @@ import numpy as np
 
 import netCDF4 as nc
 
-from functions import *
+from functions import applymask, climo
 import ncoutput
 
 #----------------------------------------------------------------------
@@ -49,12 +49,12 @@ def writeout(ftsst, fnx, fny, flats, flons, ftag):
 
   f2name = "v2.1.nc/newres1_"+ftag.strftime("%Y%m%d")+".nc"
 
-  foroutput = ncoutput.ncoutput(fnx, fny, flats, flons, f2name)
-  foroutput.ncoutput(f2name)
-  foroutput.addvar('newres1', dtype = ftsst.dtype)
-  foroutput.encodevar(ftsst, 'newres1')
+  fforoutput = ncoutput.ncoutput(fnx, fny, flats, flons, f2name)
+  fforoutput.ncoutput(f2name)
+  fforoutput.addvar('newres1', dtype = ftsst.dtype)
+  fforoutput.encodevar(ftsst, 'newres1')
 
-  foroutput.close()
+  fforoutput.close()
 
 #----------------------------------------------------------------------
 nx = 1440

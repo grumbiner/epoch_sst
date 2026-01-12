@@ -3,7 +3,7 @@ Doesn't really fit its name. Computes a second pass estimating moments
   (sumx2 etc.) using deviations from climatology, hopefully more accurately 
   than first_pass working with full temperatures.
 """
-
+import sys
 import copy
 import datetime
 
@@ -11,7 +11,7 @@ import numpy as np
 import netCDF4 as nc
 
 #----------------------------------------------------------------------
-from functions import *
+from functions import applymask, old_climo
 import ncoutput
 
 #----------------------------------------------------------------------
@@ -69,12 +69,19 @@ while (tag <= end):
 # Get the day's data:
   fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
   tmpnc = nc.Dataset(fbase + fname)
-  sst = tmpnc.variables['sst'][0,0,:,:]
+  obsst = tmpnc.variables['sst'][0,0,:,:]
   tmpnc.close()
 
 # Accumulate moments:
-  tsst = copy.deepcopy(sst)
+  tsst = copy.deepcopy(obsst)
   tsst -= tclim
+  if (tsst.max() == tsst.min() ):
+    print("zero deviation from climatology for date",tag)
+    print("epoch = ",epoch)
+    print("tclim",tclim.max(), tclim.min() )
+    print("sst",obsst.max(), obsst.min() )
+    print("tsst",tsst.max(), tsst.min() )
+    sys.exit(1)
 
   sumx1 += tsst
   sumx2 += (tsst*tsst)
@@ -82,7 +89,7 @@ while (tag <= end):
   sumx4 += (tsst*tsst)*(tsst*tsst)
   writeout(tsst, nx, ny, lats, lons, tag)
 
-  del tclim, tsst
+  del tclim, tsst, sst
   count += 1   # number of days' data
   tag   += dt
 #------------------------------------------------

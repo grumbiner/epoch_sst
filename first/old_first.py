@@ -10,7 +10,7 @@ import numpy as np
 from numpy import ma
 import netCDF4
 
-from functions import *
+from functions import applymask
 import ncoutput
 
 #------------------------------------------------
@@ -89,7 +89,7 @@ while (tag <= end ):
     tagyy = datetime.datetime(tag.year+yy, tag.month, tag.day)
 
 # Get the day's data:
-    fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
+    fname = "oisst-avhrr-v02r01." + tagyy.strftime("%Y%m%d") + ".nc"
     tmpnc = netCDF4.Dataset(fbase + fname)
     sst = tmpnc.variables['sst'][0,0,:,:]
     if ( count ==  0 ):
