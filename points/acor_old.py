@@ -24,7 +24,7 @@ epoch = datetime.datetime(1981,9,1)
 #end = datetime.datetime(1982,8,31)
 end = datetime.datetime(2011,8,31)
 nt = (end - epoch).days + 1
-print("days ",nt)
+#debug: print("days ",nt, flush=True)
 
 dt = datetime.timedelta(1)
 series = np.zeros(nt)
@@ -54,13 +54,15 @@ while (tag <= end ):
   tag   += dt
 
 #-------------------------------------------------
-print('done')
+#debug: print('done', flush=True)
 
-series -= np.mean(series)
-for i in range(0, len(series) ):
-  print(i, series[i])
+# Print out the anomalies
+#series -= np.mean(series)
+#for i in range(0, len(series) ):
+#  print(i, series[i])
 
 auto = scipy.signal.correlate(series, series, mode='full')
+print("max autocovariance ",np.max(auto) )
 auto /= np.max(auto)
 for i in range(0,len(auto)):
   print(i-10956, auto[i])
