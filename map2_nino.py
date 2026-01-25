@@ -1,6 +1,10 @@
-from math import *
+'''
+Work with residuals after subtracting Nino 3.4
+'''
+
+#from math import *
 import numpy as np
-import numpy.ma as ma
+from numpy import ma
 
 import netCDF4 as nc
 
@@ -74,7 +78,7 @@ ninocorr = sumxn / np.sqrt(sumn2) / np.sqrt(sumx2)
 print("ninocorr ",ninocorr.max(), ninocorr.min(), ninocorr.mean() )
 bins = np.linspace(-1,1,17)
 show(bins, lons, lats, ninocorr, "correlation to Niño 3.4", "nino", cmap = colors)
- 
+
 gram = sumxn / sumn2
 print("gram ", gram.max(), gram.min(), gram.mean() )
 gram = np.maximum(gram, -6.0)

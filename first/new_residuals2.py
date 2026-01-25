@@ -38,29 +38,33 @@ import numpy as np
 
 import netCDF4 as nc
 
-from functions import *
+from functions import applymask, climo
 import ncoutput
 
 #----------------------------------------------------------------------
-def writeout(ftsst, fnx, fny, flats, flons):
-  print("tsst ",tag, ftsst.max(), ftsst.min(), ftsst.mean() )
 
-  f2name = "v2.1.nc/newres1_"+tag.strftime("%Y%m%d")+".nc"
+def writeout(ftsst, fnx, fny, flats, flons, ftag):
+  ''' writing out the sst -- writeout(sst, nx, ny, lats, lons, tag) '''
+  print("tsst ",tag.strftime("%Y%m%d"), ftsst.max(), ftsst.min(), ftsst.mean() )
 
-  toutput = ncoutput.ncoutput(fnx, fny, flats, flons, f2name)
-  toutput.ncoutput(f2name)
-  toutput.addvar('newres1', dtype = ftsst.dtype)
-  toutput.encodevar(ftsst, 'newres1')
+  f2name = "v2.1.nc/newres1_"+ftag.strftime("%Y%m%d")+".nc"
 
-  toutput.close()
+  fforoutput = ncoutput.ncoutput(fnx, fny, flats, flons, f2name)
+  fforoutput.ncoutput(f2name)
+  fforoutput.addvar('newres1', dtype = ftsst.dtype)
+  fforoutput.encodevar(ftsst, 'newres1')
+
+  fforoutput.close()
 
 #----------------------------------------------------------------------
 nx = 1440
 ny =  720
 loy = 365.2422 # tropical year
 freq_base = 2.*pi/loy
+dt = datetime.timedelta(1)
 
-dset = nc.Dataset("epoch1991.nc", "r")
+epoch = datetime.datetime(1981,9,1)
+dset = nc.Dataset(f"epoch{epoch.year:4d}.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
@@ -85,15 +89,7 @@ freq[2] = freq_base*3
 phas *= pi/180.
 
 print(ampl[0].max(), phas[0].max() )
-
-epoch = datetime.datetime(1981,9,1)
-#tag   = datetime.datetime(2021,9,1)
-tag   = datetime.datetime(1981,9,1)
-
-#debug: sst = climo(intercept, slope, ampl, phas, freq, epoch, tag)
-#debug: print(sst.max(), sst.min(), sst.mean() )
-#debug: print(sst[sst < -1.8])
-
+dset.close()
 
 #-------------------------------------------------
 fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
@@ -111,30 +107,27 @@ sumx4 = np.zeros((ny,nx))
 
 # for nino3.4 orthogonalization
 sumxn = np.zeros((ny,nx))
-sumn  = np.zeros((ny,nx))
-sumn2 = np.zeros((ny,nx))
+sumn  = 0.0
+sumn2 = 0.0
 
 # Original span:
-start = datetime.datetime(1981,9,1)
+start = epoch
 #debug: end   = datetime.datetime(1981,9,18)
 end   = datetime.datetime(2011,8,31)
 # Next Decade
 #start = datetime.datetime(2011,9,1)
 #end   = datetime.datetime(2021,8,31)
 
-dt = datetime.timedelta(1)
 tag = start
 count = 0
 while (tag <= end):
-  if (count % 90 == 0):
+  if (count % 30 == 0):
     print(tag, flush=True)
 
 # Get the day's data:
   fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
-  #fname = "new_residual1/newres1_" + tag.strftime("%Y%m%d") + ".nc"
   tmpnc = nc.Dataset(fbase + fname)
   sst = tmpnc.variables['sst'][0,0,:,:]
-  #sst = tmpnc.variables['newres1'][:,:]
   if ( count ==  0 ):
       lons = tmpnc.variables['lon'][:]
       lats = tmpnc.variables['lat'][:]
@@ -151,7 +144,7 @@ while (tag <= end):
   tclim = climo(intercept, slope, ampl, phas, freq, epoch, tag)
   tsst -= tclim
 # write out residual, tsst
-  writeout(tsst, nx, ny, lats, lons)
+  writeout(tsst, nx, ny, lats, lons, tag)
 
   sumx1 += tsst
   sumx2 += (tsst*tsst)
@@ -164,20 +157,15 @@ while (tag <= end):
   sumn2 += tnino34*tnino34
   sumn  += tnino34
 
-  del tclim
+  del tsst, tclim
   count += 1   # number of days' data
   tag   += dt
 #------------------------------------------------
-days = count
-
 indices = mask.nonzero()
 applymask(sumx1, indices)
 applymask(sumx2, indices)
 applymask(sumx3, indices)
 applymask(sumx4, indices)
-applymask(sumxn, indices)
-applymask(sumx2, indices)
-applymask(sumn,  indices)
 # orthog1
 # orthog2
 
@@ -186,8 +174,6 @@ print("sumx2", sumx2.max(), sumx2.min() )
 print("sumx3", sumx3.max(), sumx3.min() )
 print("sumx4", sumx4.max(), sumx4.min() )
 print("sumxn", sumxn.max(), sumxn.min() )
-print("sumn2", sumn2.max(), sumn2.min() )
-print("sumn", sumn.max(), sumn.min() )
 mean = sumx1 / count
 print("mean", mean.max(), mean.min() )
 
@@ -203,8 +189,6 @@ foroutput.addvar('sumx2', dtype = sumx2.dtype)
 foroutput.addvar('sumx3', dtype = sumx3.dtype)
 foroutput.addvar('sumx4', dtype = sumx4.dtype)
 foroutput.addvar('sumxn', dtype = sumxn.dtype)
-foroutput.addvar('sumn2', dtype = sumxn.dtype)
-foroutput.addvar('sumn', dtype = sumxn.dtype)
 
 foroutput.addvar('mask', dtype = mask.dtype)
 foroutput.encodevar(mask, 'mask')
@@ -215,28 +199,11 @@ foroutput.encodevar(sumx2, 'sumx2')
 foroutput.encodevar(sumx3, 'sumx3')
 foroutput.encodevar(sumx4, 'sumx4')
 foroutput.encodevar(sumxn, 'sumxn')
-foroutput.encodevar(sumn2, 'sumn2')
-foroutput.encodevar(sumn, 'sumn')
-
-tmpn = days*sumn2 - sumn*sumn
-tmpx = days*sumx2 - sumx1*sumx1
-tmpx[tmpx == 0 ] = 1
-print(tmpn.min(), tmpn.max(), tmpn.mean() )
-print(tmpx.min(), tmpx.max(), tmpx.mean() )
-
-slope     = (days*sumxn - sumx1*sumn) / tmpn
-print('slope',slope.max(), slope.min(), slope.mean(), flush=True )
-
-intercept = sumx1/days - slope*sumn/days
-print('intercept',intercept.max(), intercept.min(), intercept.mean(), flush=True )
-
-correl    = (days*sumxn - sumx1*sumn) / np.sqrt(tmpn) / np.sqrt(tmpx)
-print('correl',correl.max(), correl.min(), correl.mean(), flush=True )
-
-
 
 print("number of days = ",count)
 foroutput.encodescalar(count, 'days')
+foroutput.encodescalar(sumn2, 'sumn2')
+foroutput.encodescalar(sumn, 'sumn')
 
 foroutput.close()
 #------------------ End of second pass --------------------------
