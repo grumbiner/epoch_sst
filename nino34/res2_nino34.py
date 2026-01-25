@@ -12,7 +12,7 @@ from math import pi
 import numpy as np
 import netCDF4 as nc
 
-from functions import *
+from functions import climo
 import ncoutput
 
 #----------------------------------------------------------------------
@@ -21,7 +21,7 @@ ny =  720
 loy = 365.2422 # tropical year
 freq_base = 2.*pi/loy
 
-dset = nc.Dataset("first_pass.nc", "r")
+dset = nc.Dataset("epoch1981.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
@@ -45,7 +45,7 @@ freq[2] = freq_base*3
 phas *= pi/180.
 
 
-dset = nc.Dataset("newres1_30.nc","r")
+dset = nc.Dataset("ninores1_30.nc","r")
 sumx1 = dset.variables['sumx1'][:,:]
 sumx2 = dset.variables['sumx2'][:,:]
 sumx3 = dset.variables['sumx3'][:,:]
@@ -71,10 +71,6 @@ fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 sst = np.zeros((ny,nx)) # temporary file for reading in data
 sumx1 = np.zeros((ny,nx))
 
-# Original span:
-#start = datetime.datetime(1981,9,1)
-#debug: end   = datetime.datetime(1981,9,18)
-#end   = datetime.datetime(2011,8,31)
 # Next Decade
 start = datetime.datetime(2011,9,1)
 end   = datetime.datetime(2021,8,31)
@@ -118,7 +114,7 @@ while (tag <= end):
 #------------------------------------------------
 days = count
 
-name = "ninores_30.nc"
+name = "ninores2_30.nc"
 sumx1 /= days
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
 foroutput.ncoutput(name)

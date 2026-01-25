@@ -35,22 +35,22 @@ import datetime
 from math import pi
 
 import numpy as np
-
 import netCDF4 as nc
 
-from functions import *
+from functions import applymask, climo
 import ncoutput
 
 #----------------------------------------------------------------------
-def writeout(ftsst, fnx, fny, flats, flons):
-  print("tsst ",tag, ftsst.max(), ftsst.min(), ftsst.mean() )
+def writeout(ftsst, fnx, fny, flats, flons, ftag):
+  ''' writeout(sst, nx, ny, lats, lons) -- write to netcdf file '''
+  print("tsst ",ftag, ftsst.max(), ftsst.min(), ftsst.mean() )
 
-  f2name = "v2.1.nc/newres1_"+tag.strftime("%Y%m%d")+".nc"
+  f2name = "v2.1.nc/ninores1_"+ftag.strftime("%Y%m%d")+".nc"
 
   toutput = ncoutput.ncoutput(fnx, fny, flats, flons, f2name)
   toutput.ncoutput(f2name)
-  toutput.addvar('newres1', dtype = ftsst.dtype)
-  toutput.encodevar(ftsst, 'newres1')
+  toutput.addvar('ninores1', dtype = ftsst.dtype)
+  toutput.encodevar(ftsst, 'ninores1')
 
   toutput.close()
 
@@ -60,7 +60,7 @@ ny =  720
 loy = 365.2422 # tropical year
 freq_base = 2.*pi/loy
 
-dset = nc.Dataset("epoch1991.nc", "r")
+dset = nc.Dataset("epoch1981.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
@@ -94,7 +94,6 @@ tag   = datetime.datetime(1981,9,1)
 #debug: print(sst.max(), sst.min(), sst.mean() )
 #debug: print(sst[sst < -1.8])
 
-
 #-------------------------------------------------
 fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
 
@@ -114,7 +113,7 @@ sumxn = np.zeros((ny,nx))
 sumn  = np.zeros((ny,nx))
 sumn2 = np.zeros((ny,nx))
 
-# Original span:
+# Original 30 years:
 start = datetime.datetime(1981,9,1)
 #debug: end   = datetime.datetime(1981,9,18)
 end   = datetime.datetime(2011,8,31)
@@ -131,10 +130,8 @@ while (tag <= end):
 
 # Get the day's data:
   fname = "oisst-avhrr-v02r01." + tag.strftime("%Y%m%d") + ".nc"
-  #fname = "new_residual1/newres1_" + tag.strftime("%Y%m%d") + ".nc"
   tmpnc = nc.Dataset(fbase + fname)
   sst = tmpnc.variables['sst'][0,0,:,:]
-  #sst = tmpnc.variables['newres1'][:,:]
   if ( count ==  0 ):
       lons = tmpnc.variables['lon'][:]
       lats = tmpnc.variables['lat'][:]
@@ -151,7 +148,7 @@ while (tag <= end):
   tclim = climo(intercept, slope, ampl, phas, freq, epoch, tag)
   tsst -= tclim
 # write out residual, tsst
-  writeout(tsst, nx, ny, lats, lons)
+  writeout(tsst, nx, ny, lats, lons, tag)
 
   sumx1 += tsst
   sumx2 += (tsst*tsst)
@@ -193,7 +190,7 @@ print("mean", mean.max(), mean.min() )
 
 
 # ---- .nc encoding --------------------------------------------------
-name = "newres1_30.nc"
+name = "ninores1_30.nc"
 
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
 foroutput.ncoutput(name)
@@ -232,7 +229,6 @@ print('intercept',intercept.max(), intercept.min(), intercept.mean(), flush=True
 
 correl    = (days*sumxn - sumx1*sumn) / np.sqrt(tmpn) / np.sqrt(tmpx)
 print('correl',correl.max(), correl.min(), correl.mean(), flush=True )
-
 
 
 print("number of days = ",count)

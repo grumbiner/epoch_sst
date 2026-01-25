@@ -1,0 +1,16 @@
+Runs nino3.4 extraction against the specified epoch
+     0 lrwxr-xr-x  1 rmg3  staff        15 Jan 14 10:21 epoch1981.nc@ -> ../epoch1981.nc
+
+Uses newres from v2.1.nc and writes out ninores1 to there
+     0 lrwxr-xr-x  1 rmg3  staff        27 Jan  5 20:07 v2.1.nc@ -> /Volumes/Data2/qdoi/v2.1.nc
+
+res1_nino34.py -- produces 30 year epoch of residual (ninores1) files
+ninores1_30.nc -- Statistics of ninores1 residuals
+map2_nino.py   -- Graphics of ninores1 residual statistics
+
+Compute statistics of residuals w.r.t. nino3.4 for decade following epoch
+     8 -rw-r--r--  1 rmg3  staff      3420 Jan 14 09:53 res2_nino34.py
+mean deviation of following decade
+ 16240 -rw-r--r--  1 rmg3  staff   8311859 Jan 14 12:02 ninores2_30.nc
+
+

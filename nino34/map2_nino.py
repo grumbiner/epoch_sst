@@ -17,7 +17,7 @@ from functions import *
 nx = 1440
 ny =  720
 
-dset = nc.Dataset("newres1_30.nc", "r")
+dset = nc.Dataset("ninores1_30.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 fmask = dset.variables['mask'][:,:]
@@ -33,11 +33,11 @@ sumn = dset.variables['sumn'][:,:]
 # scalars saved in global attributes
 days = getattr(dset, 'days')
 
-print("mean nino3.4 ",sumn/days)
+#debug: print("mean nino3.4 ",sumn/days, flush=True)
 
 mask = ma.masked_array(fmask > 0)
 indices = mask.nonzero()
-print("fmask > 0 ",len(indices[0]) )
+#debug: print("fmask > 0 ",len(indices[0]), flush=True )
 
 #----------------------------------------------------------------------
 zeros = np.zeros((ny,nx))
@@ -50,20 +50,20 @@ seism = matplotlib.colormaps.get_cmap('seismic')
 
 print("\n\nmean")
 bins = find_bins(mean, 34)
-bins = np.linspace(-.01,.01,65)
+bins = np.linspace(-.001,.001,33)
 #RG: plot histogram too
 show(bins, lons, lats, mean, "mean", "mean", cmap = seism, proj = proj)
 
-
 colors = matplotlib.colormaps.get_cmap('bwr')
-bins = find_bins(sumx1, 32)
-show(bins, lons, lats, sumx1, "s1", "s1", cmap = colors)
-bins = find_bins(sumx2, 32)
-show(bins, lons, lats, sumx2, "s2", "s2", cmap = colors)
-bins = find_bins(sumx3, 32)
-show(bins, lons, lats, sumx3, "s3", "s3", cmap = colors)
-bins = find_bins(sumx4, 32)
-show(bins, lons, lats, sumx4, "s4", "s4", cmap = colors)
+
+#bins = find_bins(sumx1, 32)
+#show(bins, lons, lats, sumx1, "s1", "s1", cmap = colors)
+#bins = find_bins(sumx2, 32)
+#show(bins, lons, lats, sumx2, "s2", "s2", cmap = colors)
+#bins = find_bins(sumx3, 32)
+#show(bins, lons, lats, sumx3, "s3", "s3", cmap = colors)
+#bins = find_bins(sumx4, 32)
+#show(bins, lons, lats, sumx4, "s4", "s4", cmap = colors)
 
 var = (sumx2 - sumx1*sumx1/days)/days
 bins = find_bins(var, 32)
@@ -83,12 +83,12 @@ gram = sumxn / sumn2
 print("gram ", gram.max(), gram.min(), gram.mean() )
 gram = np.maximum(gram, -6.0)
 bins = np.linspace(-6., 6., 25)
-show(bins, lons, lats, gram, "amplitude", "gram")
+show(bins, lons, lats, gram, "regression_slope", "gram")
 
 cmap = matplotlib.colormaps.get_cmap('Grays')
-bins = np.linspace(-0., 10., 23)
+bins = np.linspace(-0., 10., 41)
 show(bins, lons, lats, gram, "gram2", "gram2", cmap = cmap)
 
 cmap = matplotlib.colormaps.get_cmap('gist_gray')
-bins = np.linspace(-6., 0., 13)
+bins = np.linspace(-6., 0., 25)
 show(bins, lons, lats, gram, "gram3", "gram3", cmap = cmap)

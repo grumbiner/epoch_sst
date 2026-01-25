@@ -15,19 +15,6 @@
 !  Maps of deviation norms
 !  Maps of correlations to Nino3.4
 
-#Third pass --
-#  Read in daily analyses
-#    subtract climatology
-#    accumulate stats on residuals
-#    write out residual field for the day
-#  Write out stats on residuals
-#  Maps of deviation norms
-
-#Offline:
-#  Compute + map:
-#    %variance explained by mean, trend, harmonics, Nino3.4
-#    Magnitude residual variance
-
 """
 
 import copy
@@ -42,7 +29,6 @@ from functions import applymask, climo
 import ncoutput
 
 #----------------------------------------------------------------------
-
 def writeout(ftsst, fnx, fny, flats, flons, ftag):
   ''' writing out the sst -- writeout(sst, nx, ny, lats, lons, tag) '''
   print("tsst ",tag.strftime("%Y%m%d"), ftsst.max(), ftsst.min(), ftsst.mean() )
@@ -64,11 +50,12 @@ freq_base = 2.*pi/loy
 dt = datetime.timedelta(1)
 
 epoch = datetime.datetime(1981,9,1)
+end   = datetime.datetime(2011,8,31)
 dset = nc.Dataset(f"epoch{epoch.year:4d}.nc", "r")
 lons = dset.variables['lon'][:]
 lats = dset.variables['lat'][:]
 
-mask     = dset.variables['mask'][:,:]
+mask      = dset.variables['mask'][:,:]
 mean      = dset.variables['mean'][:,:]
 slope     = dset.variables['slope'][:,:]
 intercept = dset.variables['intercept'][:,:]
@@ -110,15 +97,7 @@ sumxn = np.zeros((ny,nx))
 sumn  = 0.0
 sumn2 = 0.0
 
-# Original span:
-start = epoch
-#debug: end   = datetime.datetime(1981,9,18)
-end   = datetime.datetime(2011,8,31)
-# Next Decade
-#start = datetime.datetime(2011,9,1)
-#end   = datetime.datetime(2021,8,31)
-
-tag = start
+tag = epoch
 count = 0
 while (tag <= end):
   if (count % 30 == 0):
@@ -160,14 +139,12 @@ while (tag <= end):
   del tsst, tclim
   count += 1   # number of days' data
   tag   += dt
-#------------------------------------------------
+#-----------------------------------------------------------------------
 indices = mask.nonzero()
 applymask(sumx1, indices)
 applymask(sumx2, indices)
 applymask(sumx3, indices)
 applymask(sumx4, indices)
-# orthog1
-# orthog2
 
 print("sumx1", sumx1.max(), sumx1.min() )
 print("sumx2", sumx2.max(), sumx2.min() )
@@ -183,8 +160,8 @@ name = "newres1_30.nc"
 
 foroutput = ncoutput.ncoutput(nx, ny, lats, lons, name)
 foroutput.ncoutput(name)
-foroutput.addvar('sumx1', dtype = sumx1.dtype)
 foroutput.addvar('mean', dtype = sumx1.dtype)
+foroutput.addvar('sumx1', dtype = sumx1.dtype)
 foroutput.addvar('sumx2', dtype = sumx2.dtype)
 foroutput.addvar('sumx3', dtype = sumx3.dtype)
 foroutput.addvar('sumx4', dtype = sumx4.dtype)
