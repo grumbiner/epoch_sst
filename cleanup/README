@@ -1,0 +1,3 @@
+statview.py is a tiny tool to look at results
+  python3 -m cProfile -o statsout YOURPROG.py 
+  python3 statview.py statsout

@@ -1,0 +1,74 @@
+'''
+Select a point and analyze the residuals from climatology during the 30 years
+#  hardwired data point: series[count] = sst[int(ny*3/4), 1260 ]
+'''
+
+import datetime
+
+import numpy as np
+import scipy
+import netCDF4
+
+from functions import *
+
+#-------------------------------------------------
+# location of data files
+fbase = "/Volumes/Data2/qdoi/v2.1.nc/"
+
+# Defining the quarter degree grid
+nx = 1440
+ny = 720
+
+# Start-finish, but will be iterating through next 30 years
+epoch = datetime.datetime(1981,9,1)
+#end = datetime.datetime(1982,8,31)
+end = datetime.datetime(2011,8,31)
+nt = (end - epoch).days + 1
+#debug: print("days ",nt, flush=True)
+
+dt = datetime.timedelta(1)
+series = np.zeros(nt)
+#---------------------------------------------
+# Now run through the data files and accumulate terms:
+
+tag = epoch
+count = 0
+sst = np.zeros((ny,nx)) # temporary file for reading in data
+
+while (tag <= end ):
+  if (count % 90 == 0):
+    print("tag =",tag, flush=True)
+
+# Get the day's data:
+  fname = "res_traditional_" + tag.strftime("%Y%m%d") + ".nc"
+
+  if not (tag.month == 2 and tag.day == 29):
+    tmpnc = netCDF4.Dataset(fbase + fname)
+    sst = tmpnc.variables['fanomaly'][:,:]
+    tmpnc.close()
+  # sst persists for leap days
+
+  series[count] = sst[int(ny*3/4), 1260 ]
+
+  count += 1   # number of days' data
+  tag   += dt
+
+#-------------------------------------------------
+#debug: print('done', flush=True)
+
+# Print out the anomalies
+#series -= np.mean(series)
+#for i in range(0, len(series) ):
+#  print(i, series[i])
+
+auto = scipy.signal.correlate(series, series, mode='full')
+print("max autocovariance ",np.max(auto) )
+auto /= np.max(auto)
+for i in range(0,len(auto)):
+  print(i-10956, auto[i])
+
+y  = scipy.fft.fft(series)
+yf = scipy.fft.fftfreq(len(series), 1)
+y  = np.abs(y)*2/len(series)
+for i in range(0, len(y)):
+  print(i, y[i], yf[i])
